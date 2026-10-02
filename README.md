@@ -1,37 +1,53 @@
 # Brady Cai — Portfolio
 
-Personal site for Brady Cai, a software engineer studying Computer Science & Business at Northeastern University.
+Personal site for Brady Cai, a software engineer studying computer science and business at Northeastern University.
 
 **Live site:** https://bradycai.github.io/Website-Portfolio/
 
 ## Stack
 
-Plain HTML, CSS, and vanilla JavaScript, with no framework and no build step. Fonts are [Geist](https://vercel.com/font), Geist Mono, and [Instrument Serif](https://fonts.google.com/specimen/Instrument+Serif) from Google Fonts. GitHub Pages serves the files exactly as they are in the repo.
+[Astro](https://astro.build) 7 with MDX, deployed to GitHub Pages by GitHub Actions. Type is [Instrument Sans](https://fonts.google.com/specimen/Instrument+Sans), self-hosted through Fontsource. Styles are plain CSS with design tokens; there is no CSS framework.
+
+Motion:
+
+- Page transitions use Astro's `<ClientRouter />`. A project's cover and title morph between the home page and its case study.
+- The hero name rises letter by letter, sections fade in as you scroll, and the theme toggle reveals the new theme as a growing circle.
+- Case studies show a reading-progress line driven by CSS scroll timelines.
+- Everything respects `prefers-reduced-motion`.
+
+## Structure
 
 ```
-index.html      All page content, one commented block per section
-styles.css      Design tokens (colors, fonts, spacing) at the top, then components
-script.js       Theme toggle, mobile menu, scroll reveals, active-nav highlight, copy-email
-assets/         Headshot, favicon, Apple touch icon, social preview image
-.nojekyll       Tells GitHub Pages to skip Jekyll and serve files directly
+src/
+  data/profile.ts             Contact details, experience, education, skills, "More projects"
+  content/projects/*.mdx      One case study per project: frontmatter plus the write-up
+  content.config.ts           The fields each case study needs
+  assets/                     Headshot and project screenshots, optimized at build time
+  components/                 Header, Footer, ProjectCover, TradingDiagram, Figure
+  layouts/Base.astro          <head>, theme setup, page transitions
+  pages/                      index.astro, projects/[slug].astro, 404.astro
+  styles/global.css           Design tokens, base styles, case study prose, motion
+  scripts/site.ts             Scroll reveals, header, theme toggle, mobile menu, copy buttons, clock
+public/                       Favicon, Apple touch icon, social preview image
+.github/workflows/deploy.yml  Builds and deploys on every push to main
 ```
 
-## Run locally
+## Develop
 
 ```bash
-python3 -m http.server 8000
-# then open http://localhost:8000
+npm install
+npm run dev     # http://localhost:4321/Website-Portfolio/
+npm run build   # static output in dist/
+npm run check   # type-check
 ```
-
-Opening `index.html` directly also works, but "Copy email" needs `http://` (clipboard access is blocked on `file://`).
 
 ## Editing
 
-- **Content:** edit `index.html`. Each section (`#about`, `#experience`, `#projects`, `#skills`, `#contact`) is self-contained.
-- **Colors:** change the tokens at the top of `styles.css`. `--accent` drives the highlight color. The dark theme lives under `:root[data-theme="dark"]`.
-- **Headshot:** replace `assets/headshot.webp` and `assets/headshot.jpg` (4:5 portrait, ~720×900).
-- **Custom domain:** if you add one, update the `canonical`, `og:url`, `og:image`, and JSON-LD URLs in the `<head>` of `index.html`.
+- **Text and links:** `src/data/profile.ts`.
+- **A new case study:** add `src/content/projects/<slug>.mdx` with the same frontmatter as the others, and put its screenshots in `src/assets/projects/<slug>/`. It appears on the home page, ordered by `order`.
+- **Colors and type:** the tokens at the top of `src/styles/global.css`. The dark theme is under `:root[data-theme="dark"]`.
+- **Custom domain:** change `site` and `base` in `astro.config.mjs`.
 
 ## Deployment
 
-GitHub Pages builds from the root of the `main` branch. Every push to `main` goes live within a minute or two.
+Every push to `main` runs `.github/workflows/deploy.yml`, which builds the site and publishes `dist/` to GitHub Pages (Settings → Pages → Source: GitHub Actions).

@@ -1,0 +1,96 @@
+---
+import "@fontsource-variable/instrument-sans/standard.css";
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { profile } from "../data/profile";
+import { url } from "../lib/url";
+
+interface Props {
+  title?: string;
+  description?: string;
+  isHome?: boolean;
+}
+
+const {
+  title,
+  description = "Brady Cai is a software engineer studying computer science and business at Northeastern University, open to summer 2027 internships.",
+  isHome = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} · ${profile.name}` : `${profile.name} · ${profile.title}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(url("og-image.png"), Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#f6f5f1" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={profile.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${profile.name}, ${profile.title}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href={url("favicon.svg")} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={url("apple-touch-icon.png")} />
+    <link rel="sitemap" href={url("sitemap-index.xml")} />
+
+    <script is:inline>
+      // Runs before first paint. Astro swaps the <html> attributes on every client-side
+      // navigation, so the same function runs again after each swap.
+      (() => {
+        const root = document.documentElement;
+        const apply = () => {
+          let theme = null;
+          try {
+            theme = localStorage.getItem("theme");
+          } catch {}
+          if (theme !== "light" && theme !== "dark") {
+            theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          root.dataset.theme = theme;
+          root.classList.add("js");
+        };
+        apply();
+        if (!window.__rootStateBound) {
+          window.__rootStateBound = true;
+          document.addEventListener("astro:after-swap", apply);
+          // Scroll-reveal content starts hidden. If the site script never runs, show it.
+          setTimeout(() => {
+            if (!root.classList.contains("reveal-ready")) root.classList.remove("js");
+          }, 3000);
+        }
+      })();
+    </script>
+
+    <ClientRouter />
+    <slot name="head" />
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header isHome={isHome} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <p class="sr-only" role="status" data-copy-status></p>
+
+    <script>
+      import "../scripts/site.ts";
+    </script>
+  </body>
+</html>

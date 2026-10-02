@@ -1,0 +1,27 @@
+---
+import Base from "../layouts/Base.astro";
+import { url } from "../lib/url";
+---
+
+<Base title="Page not found" description="This page doesn't exist.">
+  <section class="container missing">
+    <p class="muted">404</p>
+    <h1>This page doesn’t exist.</h1>
+    <p><a class="link-underlined" href={url("")}>Go to the home page</a></p>
+  </section>
+</Base>
+
+<style>
+  .missing {
+    min-height: 70vh;
+    padding-top: calc(var(--header-h) + 18vh);
+  }
+
+  h1 {
+    margin: 8px 0 24px;
+    font-size: clamp(40px, 7vw, 88px);
+    font-weight: 520;
+    font-stretch: 86%;
+    letter-spacing: -0.045em;
+  }
+</style>

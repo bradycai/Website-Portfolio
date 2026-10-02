@@ -1,0 +1,256 @@
+---
+import { profile, primaryEmail } from "../data/profile";
+import { url } from "../lib/url";
+
+interface Props {
+  isHome?: boolean;
+}
+
+const { isHome = false } = Astro.props;
+
+const links = [
+  { href: url("#work"), label: "Work" },
+  { href: url("#experience"), label: "Experience" },
+  { href: url("#about"), label: "About" },
+  { href: url("#contact"), label: "Contact" },
+];
+---
+
+<header class:list={["site-header", { "mark-auto": isHome }]} data-header>
+  <div class="container bar">
+    <a class="wordmark" href={url("")}>{profile.name}</a>
+
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav-links">
+        {links.map((link) => <li><a class="link" href={link.href}>{link.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch to dark theme">
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7Z"></path>
+        </svg>
+        <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"></path>
+        </svg>
+      </button>
+      <button class="menu-btn" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-menu">
+        <span data-menu-label>Menu</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="menu" id="site-menu" data-menu>
+    <nav aria-label="Mobile">
+      <ul>
+        {links.map((link, i) => (
+          <li style={`--i: ${i}`}><a class="menu-link" href={link.href}>{link.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+    <div class="menu-foot" style={`--i: ${links.length}`}>
+      <a href={`mailto:${primaryEmail}`}>{primaryEmail}</a>
+      <span>
+        <a href={profile.github} target="_blank" rel="noopener">GitHub</a>
+        <a href={profile.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+      </span>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    height: var(--header-h);
+    transition: translate 0.5s var(--ease-out);
+  }
+
+  /* The blurred backdrop sits on a pseudo-element: a filter on the header itself
+     would trap the fixed-position mobile menu inside the 68px bar. */
+  .site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--header-bg);
+    -webkit-backdrop-filter: saturate(160%) blur(16px);
+    backdrop-filter: saturate(160%) blur(16px);
+    opacity: 0;
+    transition: opacity 0.35s;
+  }
+
+  .site-header:global(.is-scrolled)::before,
+  .site-header:global(.menu-open)::before {
+    opacity: 1;
+  }
+
+  .site-header:global(.is-hidden):not(:focus-within) {
+    translate: 0 -100%;
+  }
+
+  .bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 100%;
+  }
+
+  .wordmark {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    transition: opacity 0.45s var(--ease-out), translate 0.45s var(--ease-out);
+  }
+
+  /* Home page: the hero name is the logo until it scrolls out of view. */
+  .mark-auto:not(:global(.show-mark)):not(:global(.menu-open)) .wordmark {
+    opacity: 0;
+    translate: 0 8px;
+    pointer-events: none;
+  }
+
+  .nav {
+    margin-left: auto;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    font-size: 15px;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+  }
+
+  .nav-links a:hover {
+    color: var(--fg);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-right: -8px;
+    border-radius: 50%;
+    color: var(--muted);
+    transition: color 0.2s, background-color 0.2s;
+  }
+
+  .icon-btn:hover {
+    background: var(--hover);
+    color: var(--fg);
+  }
+
+  .sun,
+  :global([data-theme="dark"]) .moon {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .sun {
+    display: block;
+  }
+
+  .menu-btn {
+    display: none;
+    padding: 8px 0 8px 12px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .menu {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(var(--header-h) + 28px) var(--gutter) 32px;
+    background: var(--bg);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s var(--ease-out), visibility 0.35s;
+  }
+
+  .site-header:global(.menu-open) .menu {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .menu-link {
+    display: block;
+    padding: 4px 0;
+    font-size: clamp(40px, 12vw, 56px);
+    font-weight: 520;
+    font-stretch: 88%;
+    letter-spacing: -0.045em;
+    line-height: 1.15;
+  }
+
+  .menu li,
+  .menu-foot {
+    opacity: 0;
+    translate: 0 14px;
+    transition: opacity 0.6s var(--ease-out), translate 0.6s var(--ease-out);
+    transition-delay: calc(var(--i) * 45ms);
+  }
+
+  .site-header:global(.menu-open) .menu li,
+  .site-header:global(.menu-open) .menu-foot {
+    opacity: 1;
+    translate: none;
+  }
+
+  .menu-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .menu-foot span {
+    display: flex;
+    gap: 20px;
+  }
+
+  @media (max-width: 760px) {
+    .nav {
+      display: none;
+    }
+
+    .actions {
+      margin-left: auto;
+    }
+
+    .icon-btn {
+      margin-right: 0;
+    }
+
+    .menu-btn {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu li,
+    .menu-foot {
+      translate: none;
+      transition: opacity 0.2s;
+    }
+  }
+</style>

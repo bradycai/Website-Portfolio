@@ -1,0 +1,59 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import TradingDiagram from "./TradingDiagram.astro";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  sizes: string;
+  priority?: boolean;
+}
+
+const { project, sizes, priority = false } = Astro.props;
+const { cover, coverAlt, diagram, tint } = project.data;
+---
+
+<!-- The same transition name is used on the case study page, so the cover morphs between them. -->
+<div class="cover" style={`--tint: ${tint}`} transition:name={`cover-${project.id}`}>
+  {cover && (
+    <Image
+      class="shot"
+      src={cover}
+      alt={coverAlt ?? ""}
+      widths={[640, 960, 1280, 1760, 2400]}
+      sizes={sizes}
+      priority={priority}
+    />
+  )}
+  {diagram === "trading" && <TradingDiagram />}
+</div>
+
+<style>
+  .cover {
+    position: relative;
+    container-type: inline-size;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--tint);
+    isolation: isolate;
+  }
+
+  /* Screenshots sit low in the frame and run off the bottom edge. */
+  .shot {
+    position: absolute;
+    left: 4%;
+    bottom: -6%;
+    width: 92%;
+    height: auto;
+    border-radius: 8px 8px 0 0;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 30px 70px -28px rgba(0, 0, 0, 0.6);
+    transition: translate 1.1s var(--ease-out);
+  }
+
+  :global(.cover-link:hover) .shot {
+    translate: 0 -10px;
+  }
+</style>

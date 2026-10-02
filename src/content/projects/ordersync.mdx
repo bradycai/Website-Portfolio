@@ -1,0 +1,57 @@
+---
+title: OrderSync
+summary: An operations dashboard for e-commerce sellers. It pulls orders from Shopify, TikTok Shop, Amazon, and eBay into one place, catches problems early, and drafts fixes for a person to approve.
+kind: Hackathon project
+period: Sep 2026
+year: "2026"
+order: 1
+award: 1st place, Misneach challenge at the AINU Hackathon ($700 team prize)
+stack: [TypeScript, React, Vite, Express, SQLite, Claude API]
+links:
+  code: https://github.com/bradycai/OrderSync
+cover: ../../assets/projects/ordersync/overview.png
+coverAlt: OrderSync overview dashboard with order totals, a stock shortage callout for a black hoodie, and order counts by sales channel.
+tint: "#20392b"
+---
+
+import Figure from "../../components/Figure.astro";
+import attention from "../../assets/projects/ordersync/attention.png";
+import draft from "../../assets/projects/ordersync/draft.png";
+import intake from "../../assets/projects/ordersync/intake.png";
+
+## The problem
+
+A small brand selling on Shopify, TikTok Shop, Amazon, and eBay gets its orders as four separate streams of notification emails. Nothing adds up stock across them, so the same hoodie can sell out on three storefronts at once before anyone notices.
+
+## What it does
+
+OrderSync pulls every order into one table, keeps a running count of committed stock, and keeps a **Needs attention** queue for anything about to go wrong: stock shortages, overdue shipments, and products it can't match with confidence.
+
+<Figure
+  src={attention}
+  alt="Needs attention view showing a critical alert: Heavyweight Hoodie Black / M is one unit short, with the calculation 5 in stock minus 6 committed and the three orders involved."
+  caption="Three channels sold six hoodies against five in stock. The alert shows the math and every order involved."
+/>
+
+Routine warnings, like an overdue shipment that only needs a follow-up, can be cleared by the AI assistant in one click. Critical issues, shortages, and uncertain matches always stay with the seller. For those, the seller picks a resolution (a delay, a partial shipment, a refund, or a stock correction) and Claude drafts the customer message. Nothing goes out without approval.
+
+<Figure
+  src={draft}
+  alt="Review panel with an editable customer message drafted for the hoodie shortage, and buttons to approve or re-draft."
+  caption="Claude drafts the message, the seller edits and approves it. In the demo, approving only records the decision."
+/>
+
+## How it's built
+
+- **AI for judgment, never arithmetic.** Claude reads pasted emails, suggests SKU matches, and drafts messages. Stock math, duplicate detection, deadlines, and alert thresholds are plain TypeScript.
+- **Imports are idempotent.** An order's identity is its channel plus its marketplace order ID, so a repeated notification updates the existing order instead of creating a second one.
+- **Uncertain matches stay out of the math.** A SKU suggestion under 90% confidence waits for the seller to confirm it, and the confirmed mapping is remembered for next time.
+- **Stock is never double-counted.** Starting stock is stored once, and commitments are recomputed from the order list on every request.
+
+<Figure
+  src={intake}
+  alt="Email intake preview listing the channel, order ID, identity key, customer, dates, and the SKUs matched from a pasted TikTok Shop notification."
+  caption="A pasted TikTok Shop email: the extracted order, its identity key, and the matched SKUs, shown before anything is saved."
+/>
+
+The backend is an Express API over SQLite, seeded with sample data on first launch. Without an API key it runs in a demo mode with prepared AI outputs, which is how these screenshots were taken.

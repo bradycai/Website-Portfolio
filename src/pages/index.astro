@@ -1,0 +1,857 @@
+---
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import ProjectCover from "../components/ProjectCover.astro";
+import headshot from "../assets/headshot.jpg";
+import { profile, primaryEmail, experience, education, skills, moreProjects } from "../data/profile";
+import { url } from "../lib/url";
+
+const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+
+// Each letter of the name rises on its own, so split it up (the h1 keeps a plain label).
+let charIndex = 0;
+const nameWords = profile.name.split(" ").map((word) => [...word].map((ch) => ({ ch, i: charIndex++ })));
+
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: profile.name,
+  url: new URL(url(""), Astro.site).href,
+  image: new URL(url("og-image.png"), Astro.site).href,
+  email: profile.emails.map((e) => `mailto:${e.address}`),
+  jobTitle: "Software Engineer Co-op",
+  worksFor: { "@type": "Organization", name: "NExT Consulting" },
+  affiliation: { "@type": "CollegeOrUniversity", name: education.school },
+  address: { "@type": "PostalAddress", addressLocality: "Boston", addressRegion: "MA", addressCountry: "US" },
+  sameAs: [profile.github, profile.linkedin],
+};
+---
+
+<Base isHome>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
+
+  <!-- ===================== Hero ===================== -->
+  <section class="hero" aria-labelledby="hero-name">
+    <div class="container">
+      <h1 class="hero-name" id="hero-name" data-hero-name aria-label={profile.name}>
+        {nameWords.map((word, w) => (
+          <>
+            {w > 0 && " "}
+            <span class="word" aria-hidden="true">
+              {word.map(({ ch, i }) => <span class="ch" style={`--i: ${i}`}>{ch}</span>)}
+            </span>
+          </>
+        ))}
+      </h1>
+
+      <div class="hero-row">
+        <p class="hero-intro hero-in" style="--d: 0">{profile.intro}</p>
+
+        <dl class="hero-facts">
+          <div class="hero-in" style="--d: 1">
+            <dt>Now</dt>
+            <dd>{profile.now}</dd>
+          </div>
+          <div class="hero-in" style="--d: 2">
+            <dt>Looking for</dt>
+            <dd class="with-dot"><span class="dot" aria-hidden="true"></span><span>{profile.lookingFor}</span></dd>
+          </div>
+          <div class="hero-in" style="--d: 3">
+            <dt>Based in</dt>
+            <dd>{profile.location} <span class="muted clock">· <time data-clock={profile.timeZone}></time></span></dd>
+          </div>
+          <div class="hero-in" style="--d: 4">
+            <dt>Elsewhere</dt>
+            <dd class="hero-links">
+              <a class="link" href={profile.github} target="_blank" rel="noopener">GitHub <span class="arrow arrow-out" aria-hidden="true">↗</span></a>
+              <a class="link" href={profile.linkedin} target="_blank" rel="noopener">LinkedIn <span class="arrow arrow-out" aria-hidden="true">↗</span></a>
+              <a class="link" href={`mailto:${primaryEmail}`}>Email</a>
+            </dd>
+          </div>
+        </dl>
+
+        <figure class="hero-portrait">
+          <Image src={headshot} alt={`Portrait of ${profile.name}`} widths={[180, 270, 360, 540]} sizes="(min-width: 1025px) 168px, (min-width: 641px) 22vw, 104px" priority />
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Work ===================== -->
+  <section class="section" id="work" aria-labelledby="work-title">
+    <div class="container section-grid">
+      <h2 class="section-label" id="work-title">Selected work</h2>
+      <ol class="section-body projects">
+        {projects.map((project) => {
+          const href = url(`projects/${project.id}/`);
+          const { title, kind, year, award, summary, stack, links } = project.data;
+          return (
+            <li class="project">
+              <a class="cover-link" href={href} tabindex="-1" aria-hidden="true" data-reveal="media">
+                <ProjectCover project={project} sizes="(min-width: 1240px) 876px, (min-width: 901px) 72vw, 100vw" />
+              </a>
+              <div class="project-info" data-reveal>
+                <div class="project-heading">
+                  <h3>
+                    <a class="project-title" href={href}><span transition:name={`title-${project.id}`}>{title}</span></a>
+                  </h3>
+                  <p class="muted">{kind}, {year}</p>
+                </div>
+                <div class="project-text">
+                  {award && <p class="award">{award}</p>}
+                  <p class="summary">{summary}</p>
+                  <p class="stack muted">{stack.join(", ")}</p>
+                  <p class="project-links">
+                    <a class="link" href={href}>Read the case study <span class="arrow arrow-right" aria-hidden="true">→</span></a>
+                    {links.live && <a class="link" href={links.live} target="_blank" rel="noopener">Live site <span class="arrow arrow-out" aria-hidden="true">↗</span></a>}
+                    {links.code && <a class="link" href={links.code} target="_blank" rel="noopener">Code <span class="arrow arrow-out" aria-hidden="true">↗</span></a>}
+                  </p>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== Experience ===================== -->
+  <section class="section" id="experience" aria-labelledby="experience-title">
+    <div class="container section-grid">
+      <h2 class="section-label" id="experience-title">Experience</h2>
+      <ol class="section-body roles">
+        {experience.map((job) => (
+          <li class="role" data-reveal>
+            <p class="role-period tabular">
+              {job.current && <span class="dot" aria-hidden="true"></span>}
+              {job.period}
+            </p>
+            <div>
+              <h3 class="role-title">{job.role}</h3>
+              <p class="role-company">
+                {job.companyUrl ? (
+                  <a class="link-underlined" href={job.companyUrl} target="_blank" rel="noopener">{job.company}</a>
+                ) : (
+                  job.company
+                )}
+                <span class="muted"> · {job.location}</span>
+              </p>
+              <p class="role-summary">{job.summary}</p>
+              <ul class="role-points">
+                {job.highlights.map((point) => <li>{point}</li>)}
+              </ul>
+              <p class="stack muted">{job.stack.join(", ")}</p>
+              {job.caseStudy && (
+                <p class="role-more">
+                  <a class="link" href={url(`projects/${job.caseStudy}/`)}>See the case study <span class="arrow arrow-right" aria-hidden="true">→</span></a>
+                </p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== More projects ===================== -->
+  <section class="section" id="more" aria-labelledby="more-title">
+    <div class="container section-grid">
+      <h2 class="section-label" id="more-title">More projects</h2>
+      <ul class="section-body more">
+        {moreProjects.map((item, i) => (
+          <li data-reveal style={`--i: ${i}`}>
+            <a class="more-row" href={item.url} target="_blank" rel="noopener">
+              <span class="more-name">{item.name}</span>
+              <span class="more-desc">{item.description}</span>
+              <span class="more-stack muted">{item.stack}</span>
+              <span class="arrow arrow-out more-arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))}
+        <li data-reveal style={`--i: ${moreProjects.length}`}>
+          <a class="more-row more-all" href={profile.github} target="_blank" rel="noopener">
+            <span class="more-name">Everything else on GitHub</span>
+            <span class="arrow arrow-out more-arrow" aria-hidden="true">↗</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== About ===================== -->
+  <section class="section" id="about" aria-labelledby="about-title">
+    <div class="container section-grid">
+      <h2 class="section-label" id="about-title">About</h2>
+      <div class="section-body">
+        <div class="about-text" data-reveal>
+          <p>
+            I’m a computer science and business student at Northeastern’s Khoury College, graduating in 2028. Since
+            September 2026 I’ve been a software engineer co-op at NExT Consulting, working on RepoPulse.
+          </p>
+          <p>
+            Most of my projects land where software meets day-to-day operations: an order tracker for sellers on four
+            marketplaces, a trading assistant that checks every idea against hard rules, and a new website for a New
+            England video production company. When AI is involved, it handles the fuzzy parts, like reading an email or
+            drafting a reply, and the math stays in plain code with tests.
+          </p>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-block" data-reveal>
+            <h3>Education</h3>
+            <p class="strong">{education.school}</p>
+            <p>{education.degree}</p>
+            <p class="muted">{education.college} · {education.graduation}</p>
+            <p class="coursework-label muted">Coursework</p>
+            <p class="coursework">{education.coursework.join(", ")}</p>
+          </div>
+          <div class="about-block" data-reveal style="--i: 1">
+            <h3>Skills</h3>
+            <dl class="skills">
+              {skills.map((group) => (
+                <div>
+                  <dt class="muted">{group.group}</dt>
+                  <dd>{group.items.join(", ")}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Contact ===================== -->
+  <section class="section" id="contact" aria-labelledby="contact-title">
+    <div class="container section-grid">
+      <h2 class="section-label" id="contact-title">Contact</h2>
+      <div class="section-body">
+        <p class="contact-lead" data-reveal>Hiring for summer 2027? I’d love to hear from you.</p>
+        <p class="contact-sub muted" data-reveal style="--i: 1">
+          I’m looking for a software engineering internship from May to August 2027. Email is the fastest way to reach me.
+        </p>
+        <ul class="contact-list" data-reveal style="--i: 2">
+          {profile.emails.map((email) => (
+            <li class="contact-row">
+              <span class="contact-label muted">{email.label}</span>
+              <a class="contact-value link" href={`mailto:${email.address}`}>{email.address}</a>
+              <button class="copy" type="button" data-copy={email.address} aria-label={`Copy ${email.address}`}>
+                <span data-copy-label>Copy</span>
+              </button>
+            </li>
+          ))}
+          <li class="contact-row">
+            <span class="contact-label muted">LinkedIn</span>
+            <a class="contact-value link" href={profile.linkedin} target="_blank" rel="noopener">linkedin.com/in/bradycai</a>
+            <span class="arrow contact-arrow" aria-hidden="true">↗</span>
+          </li>
+          <li class="contact-row">
+            <span class="contact-label muted">GitHub</span>
+            <a class="contact-value link" href={profile.github} target="_blank" rel="noopener">github.com/bradycai</a>
+            <span class="arrow contact-arrow" aria-hidden="true">↗</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---------- Hero ---------- */
+
+  .hero {
+    padding-top: calc(var(--header-h) + clamp(48px, 11vh, 132px));
+    padding-bottom: clamp(24px, 4vw, 48px);
+  }
+
+  .hero-name {
+    margin-left: -0.045em;
+    font-size: clamp(76px, 16.4vw, 236px);
+    font-weight: 520;
+    font-stretch: 84%;
+    line-height: 0.84;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+  }
+
+  /* Each word clips its letters, which rise into place one after another. */
+  .word {
+    display: inline-block;
+    overflow: clip;
+    margin: -0.06em -0.04em -0.16em;
+    padding: 0.06em 0.04em 0.16em;
+  }
+
+  .ch {
+    display: inline-block;
+    translate: 0 112%;
+    animation: char-rise 1.15s var(--ease-out) forwards;
+    animation-delay: calc(80ms + var(--i) * 42ms);
+  }
+
+  @keyframes char-rise {
+    to {
+      translate: 0 0;
+    }
+  }
+
+  .hero-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 24px;
+    margin-top: clamp(40px, 6vw, 72px);
+    padding-top: 26px;
+  }
+
+  /* The rule above the intro draws itself in from the left. */
+  .hero-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: var(--line-strong);
+    transform-origin: left;
+    animation: rule-draw 1.4s var(--ease-out) 0.35s both;
+  }
+
+  @keyframes rule-draw {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  .hero-in {
+    animation: hero-in 1s var(--ease-out) both;
+    animation-delay: calc(560ms + var(--d, 0) * 80ms);
+  }
+
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+      filter: blur(6px);
+    }
+  }
+
+  .hero-intro {
+    grid-column: 1 / span 5;
+    max-width: 30ch;
+    font-size: clamp(20px, 1.7vw, 23px);
+    line-height: 1.42;
+    letter-spacing: -0.015em;
+  }
+
+  .hero-facts {
+    grid-column: 7 / span 4;
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .hero-facts > div {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .hero-facts dt {
+    color: var(--muted);
+  }
+
+  .with-dot {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .with-dot .dot {
+    flex: none;
+    translate: 0 -1px;
+  }
+
+  .hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+
+  .clock time:empty::before {
+    content: "ET";
+  }
+
+  .hero-portrait {
+    grid-column: 11 / span 2;
+    justify-self: end;
+    width: 100%;
+    max-width: 168px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--surface);
+    animation: portrait-in 1.3s var(--ease-out) 0.45s both;
+  }
+
+  .hero-portrait :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    animation: portrait-zoom 1.6s var(--ease-out) 0.45s both;
+  }
+
+  @keyframes portrait-in {
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes portrait-zoom {
+    from {
+      scale: 1.14;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .hero-intro {
+      grid-column: 1 / span 8;
+    }
+
+    .hero-facts {
+      grid-column: 1 / span 8;
+      margin-top: 32px;
+    }
+
+    .hero-portrait {
+      grid-column: 10 / span 3;
+      grid-row: 1 / span 2;
+      align-self: start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero-row {
+      grid-template-columns: minmax(0, 1fr) 104px;
+      column-gap: 20px;
+    }
+
+    .hero-intro {
+      grid-column: 1;
+      grid-row: 1;
+      font-size: 19px;
+    }
+
+    .hero-portrait {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .hero-facts {
+      grid-column: 1 / -1;
+      margin-top: 28px;
+    }
+
+    .hero-facts > div {
+      grid-template-columns: 88px minmax(0, 1fr);
+    }
+  }
+
+  /* ---------- Work ---------- */
+
+  .projects {
+    display: grid;
+    gap: clamp(64px, 9vw, 112px);
+  }
+
+  .cover-link {
+    display: block;
+    border-radius: 14px;
+  }
+
+  .project-info {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 12px 24px;
+    margin-top: 24px;
+  }
+
+  .project-heading h3 {
+    font-size: clamp(24px, 2.2vw, 30px);
+    letter-spacing: -0.03em;
+  }
+
+  .project-title span {
+    display: inline-block;
+  }
+
+  .project-title:hover {
+    color: var(--accent);
+  }
+
+  .project-heading p {
+    margin-top: 4px;
+    font-size: 15px;
+  }
+
+  .award {
+    margin-bottom: 8px;
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 550;
+  }
+
+  .summary {
+    max-width: 56ch;
+    color: var(--fg-2);
+  }
+
+  .stack {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+    margin-top: 18px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .project-info {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---------- Experience ---------- */
+
+  .roles {
+    display: grid;
+  }
+
+  .role {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 7fr);
+    gap: 8px 24px;
+    padding-block: 32px;
+    border-top: 1px solid var(--line);
+  }
+
+  .role:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .role-period {
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .role-period .dot {
+    margin-right: 8px;
+  }
+
+  .role-title {
+    font-size: 22px;
+    letter-spacing: -0.025em;
+  }
+
+  .role-company {
+    margin-top: 4px;
+    font-size: 16px;
+  }
+
+  .role-summary {
+    max-width: 62ch;
+    margin-top: 16px;
+    color: var(--fg-2);
+  }
+
+  .role-points {
+    display: grid;
+    gap: 8px;
+    max-width: 66ch;
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  .role-points li {
+    position: relative;
+    padding-left: 20px;
+  }
+
+  .role-points li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 0.8em;
+    width: 8px;
+    height: 1px;
+    background: var(--line-strong);
+  }
+
+  .role-more {
+    margin-top: 16px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .role {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---------- More projects ---------- */
+
+  .more {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .more-row {
+    position: relative;
+    z-index: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) minmax(0, 2.4fr) 20px;
+    gap: 6px 24px;
+    align-items: baseline;
+    padding-block: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  .more-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 -12px;
+    z-index: -1;
+    border-radius: 10px;
+    background: var(--hover);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .more-row:hover::before {
+    opacity: 1;
+  }
+
+  .more-name {
+    font-weight: 550;
+  }
+
+  .more-desc {
+    color: var(--fg-2);
+    font-size: 16px;
+  }
+
+  .more-stack {
+    font-size: 14px;
+  }
+
+  .more-arrow {
+    justify-self: end;
+    color: var(--muted);
+  }
+
+  .more-row:hover .more-arrow {
+    color: var(--fg);
+  }
+
+  .more-all {
+    grid-template-columns: minmax(0, 1fr) 20px;
+  }
+
+  @media (max-width: 760px) {
+    .more-row {
+      grid-template-columns: minmax(0, 1fr) 20px;
+    }
+
+    .more-desc,
+    .more-stack {
+      grid-column: 1;
+    }
+
+    .more-arrow {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+
+  /* ---------- About ---------- */
+
+  .about-text {
+    display: grid;
+    gap: 1em;
+    max-width: 38em;
+    font-size: clamp(19px, 1.6vw, 21px);
+    line-height: 1.55;
+    letter-spacing: -0.012em;
+  }
+
+  .about-text p + p {
+    color: var(--fg-2);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 40px 24px;
+    margin-top: clamp(48px, 6vw, 72px);
+  }
+
+  .about-block h3 {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .about-block p {
+    font-size: 16px;
+  }
+
+  .strong {
+    font-weight: 600;
+  }
+
+  .coursework-label {
+    margin-top: 16px;
+  }
+
+  .coursework {
+    margin-top: 2px;
+    color: var(--fg-2);
+    line-height: 1.55;
+  }
+
+  .skills {
+    display: grid;
+    gap: 12px;
+    font-size: 16px;
+  }
+
+  .skills > div {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 760px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .skills > div {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+
+  /* ---------- Contact ---------- */
+
+  .contact-lead {
+    max-width: 16ch;
+    font-size: clamp(36px, 4.6vw, 64px);
+    font-weight: 520;
+    font-stretch: 88%;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  .contact-sub {
+    max-width: 48ch;
+    margin-top: 20px;
+  }
+
+  .contact-list {
+    margin-top: clamp(32px, 5vw, 48px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .contact-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) 64px;
+    gap: 8px 24px;
+    align-items: baseline;
+    padding-block: 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  .contact-label {
+    font-size: 15px;
+  }
+
+  .contact-value {
+    justify-self: start;
+    font-size: clamp(17px, 1.5vw, 20px);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    overflow-wrap: anywhere;
+  }
+
+  .copy {
+    justify-self: end;
+    padding: 4px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+
+  .copy:hover {
+    border-color: var(--fg);
+    color: var(--fg);
+  }
+
+  .copy:global(.is-copied) {
+    border-color: transparent;
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .contact-arrow {
+    justify-self: end;
+    padding-right: 4px;
+    color: var(--muted);
+  }
+
+  .contact-row:hover .contact-arrow {
+    color: var(--fg);
+    transform: translate(2px, -2px);
+  }
+
+  @media (max-width: 640px) {
+    .contact-row {
+      grid-template-columns: minmax(0, 1fr) 64px;
+    }
+
+    .contact-label {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ch,
+    .hero-in,
+    .hero-row::before,
+    .hero-portrait,
+    .hero-portrait :global(img) {
+      animation: none;
+      translate: none;
+    }
+  }
+</style>

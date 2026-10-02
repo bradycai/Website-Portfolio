@@ -1,0 +1,242 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import ProjectCover from "../../components/ProjectCover.astro";
+import { url } from "../../lib/url";
+
+export async function getStaticPaths() {
+  const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+  return projects.map((project, i) => ({
+    params: { slug: project.id },
+    props: { project, next: projects[(i + 1) % projects.length] },
+  }));
+}
+
+const { project, next } = Astro.props;
+const { Content } = await render(project);
+const { title, summary, kind, period, stack, award, links } = project.data;
+---
+
+<Base title={title} description={summary}>
+  <div class="progress" aria-hidden="true"></div>
+
+  <article class="case">
+    <header class="container case-head">
+      <a class="back link" href={url("#work")}><span class="arrow" aria-hidden="true">←</span> All work</a>
+      <p class="case-kind muted">{kind} · {period}</p>
+      <h1 class="case-title"><span transition:name={`title-${project.id}`}>{title}</span></h1>
+      <p class="case-summary">{summary}</p>
+    </header>
+
+    <div class="container case-cover">
+      <ProjectCover project={project} priority sizes="(min-width: 1240px) 1200px, 100vw" />
+    </div>
+
+    <div class="container case-body">
+      <aside class="case-meta" aria-label="Project details">
+        <dl>
+          <div>
+            <dt>Type</dt>
+            <dd>{kind}</dd>
+          </div>
+          <div>
+            <dt>When</dt>
+            <dd>{period}</dd>
+          </div>
+          {award && (
+            <div>
+              <dt>Recognition</dt>
+              <dd>{award}</dd>
+            </div>
+          )}
+          <div>
+            <dt>Stack</dt>
+            <dd>{stack.join(", ")}</dd>
+          </div>
+          <div>
+            <dt>Links</dt>
+            <dd class="case-links">
+              {links.live && <a class="link" href={links.live} target="_blank" rel="noopener">Live site <span class="arrow arrow-out" aria-hidden="true">↗</span></a>}
+              {links.code && <a class="link" href={links.code} target="_blank" rel="noopener">Source code <span class="arrow arrow-out" aria-hidden="true">↗</span></a>}
+            </dd>
+          </div>
+        </dl>
+      </aside>
+
+      <div class="prose case-prose">
+        <Content />
+      </div>
+    </div>
+
+    <nav class="container case-next" aria-label="Next project">
+      <a class="next-link" href={url(`projects/${next.id}/`)}>
+        <span class="muted">Next project</span>
+        <span class="next-title">{next.data.title} <span class="arrow arrow-right" aria-hidden="true">→</span></span>
+      </a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  /* Reading progress, driven by the page scroll with no JavaScript. */
+  .progress {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(0);
+    animation: progress linear both;
+    animation-timeline: scroll(root);
+  }
+
+  @keyframes progress {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @supports not (animation-timeline: scroll()) {
+    .progress {
+      display: none;
+    }
+  }
+
+  .case-head {
+    padding-top: calc(var(--header-h) + clamp(32px, 7vh, 80px));
+  }
+
+  .back {
+    display: inline-flex;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .back:hover {
+    color: var(--fg);
+  }
+
+  .back:hover .arrow {
+    transform: translateX(-3px);
+  }
+
+  .case-kind {
+    margin-top: clamp(40px, 7vw, 72px);
+    font-size: 15px;
+  }
+
+  .case-title {
+    margin: 10px 0 0 -0.04em;
+    font-size: clamp(56px, 10vw, 140px);
+    font-weight: 520;
+    font-stretch: 84%;
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+
+  .case-title span {
+    display: inline-block;
+  }
+
+  .case-summary {
+    max-width: 36ch;
+    margin-top: 24px;
+    color: var(--fg-2);
+    font-size: clamp(19px, 1.8vw, 24px);
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+  }
+
+  .case-cover {
+    margin-top: clamp(40px, 6vw, 72px);
+  }
+
+  .case-body {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 24px;
+    margin-top: clamp(48px, 7vw, 88px);
+  }
+
+  .case-meta {
+    grid-column: 1 / span 3;
+  }
+
+  .case-meta dl {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    display: grid;
+    gap: 18px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .case-meta dt {
+    margin-bottom: 2px;
+    color: var(--muted);
+  }
+
+  .case-links {
+    display: grid;
+    justify-items: start;
+    gap: 2px;
+  }
+
+  .case-prose {
+    grid-column: 4 / span 8;
+    max-width: 44em;
+  }
+
+  .case-next {
+    margin-top: clamp(80px, 10vw, 140px);
+    margin-bottom: clamp(56px, 8vw, 96px);
+  }
+
+  .next-link {
+    display: grid;
+    gap: 6px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 15px;
+  }
+
+  .next-title {
+    font-size: clamp(32px, 4.6vw, 64px);
+    font-weight: 520;
+    font-stretch: 88%;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    transition: color 0.2s;
+  }
+
+  .next-link:hover .next-title {
+    color: var(--accent);
+  }
+
+  @media (max-width: 900px) {
+    .case-meta,
+    .case-prose {
+      grid-column: 1 / -1;
+    }
+
+    .case-meta {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .case-meta dl {
+      position: static;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress {
+      display: none;
+    }
+  }
+</style>

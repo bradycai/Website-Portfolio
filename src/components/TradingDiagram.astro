@@ -1,0 +1,268 @@
+---
+// Cover for the trading assistant: its architecture, drawn from the project README.
+// A real screenshot needs live Alpaca and Claude keys, so the system diagram stands in.
+// Narrow covers (phones) get a simpler three-step version with larger type.
+const signals = [
+  { label: "BUY", width: 64, tone: "buy" },
+  { label: "HOLD", width: 74, tone: "hold" },
+  { label: "SELL", width: 70, tone: "sell" },
+  { label: "WATCH", width: 88, tone: "watch" },
+  { label: "AVOID", width: 88, tone: "avoid" },
+];
+
+const layoutPills = (startX: number, gap: number, scale = 1) => {
+  let x = startX;
+  return signals.map((s) => {
+    const pill = { ...s, x, width: s.width * scale };
+    x += s.width * scale + gap;
+    return pill;
+  });
+};
+
+const fullPills = layoutPills(888, 10);
+const compactScale = 1.25;
+const compactWidth = signals.reduce((sum, s) => sum + s.width * compactScale, 0) + 12 * (signals.length - 1);
+const compactPills = layoutPills((800 - compactWidth) / 2, 12, compactScale);
+
+const label =
+  "Architecture: a React dashboard talks to a FastAPI backend, which asks Claude for a trade intent. Every intent goes through a risk engine before an order reaches Alpaca, and everything is logged in PostgreSQL.";
+---
+
+<svg class="diagram full" viewBox="0 0 1600 1000" role="img" aria-label={label}>
+  <defs>
+    <pattern id="td-dots" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="rgba(255,255,255,0.07)"></circle>
+    </pattern>
+    <marker id="td-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M1 1.5 8.5 5 1 8.5" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#td-dots)"></rect>
+
+  <!-- Edges: a static line plus a dotted overlay that drifts along it. -->
+  <g class="edges">
+    <path d="M364 505 H468" marker-end="url(#td-arrow)"></path>
+    <path d="M610 430 V285 H848" marker-end="url(#td-arrow)"></path>
+    <path d="M990 375 V422" marker-end="url(#td-arrow)" class="dashed"></path>
+    <path d="M1124 505 H1228" marker-end="url(#td-arrow)"></path>
+    <path d="M610 580 V730 H848" marker-end="url(#td-arrow)"></path>
+  </g>
+  <g class="flow" aria-hidden="true">
+    <path d="M364 505 H468"></path>
+    <path d="M610 430 V285 H848"></path>
+    <path d="M1124 505 H1228"></path>
+    <path d="M610 580 V730 H848"></path>
+  </g>
+
+  <g class="edge-labels">
+    <text x="636" y="268">market data</text>
+    <text x="1008" y="408">intent</text>
+    <text x="636" y="713">every decision</text>
+  </g>
+
+  <g class="node">
+    <rect x="96" y="430" width="268" height="150" rx="18"></rect>
+    <text class="title" x="124" y="490">Dashboard</text>
+    <text class="sub" x="124" y="530">React · approvals</text>
+  </g>
+
+  <g class="node">
+    <rect x="476" y="430" width="268" height="150" rx="18"></rect>
+    <text class="title" x="504" y="490">Backend</text>
+    <text class="sub" x="504" y="530">FastAPI</text>
+  </g>
+
+  <g class="node">
+    <rect x="856" y="195" width="648" height="180" rx="18"></rect>
+    <text class="title" x="888" y="252">Claude</text>
+    <text class="sub" x="888" y="290">Analysis only. No broker keys, no order tools.</text>
+    {fullPills.map((p) => (
+      <g class:list={["pill", p.tone]}>
+        <rect x={p.x} y="314" width={p.width} height="38" rx="8"></rect>
+        <text x={p.x + p.width / 2} y="340" text-anchor="middle">{p.label}</text>
+      </g>
+    ))}
+  </g>
+
+  <g class="node risk">
+    <rect x="856" y="430" width="268" height="150" rx="18"></rect>
+    <text class="title" x="884" y="490">Risk engine</text>
+    <text class="sub" x="884" y="530">9 rules · runs twice</text>
+  </g>
+
+  <g class="node">
+    <rect x="1236" y="430" width="268" height="150" rx="18"></rect>
+    <text class="title" x="1264" y="490">Alpaca</text>
+    <text class="sub" x="1264" y="530">Paper trading</text>
+  </g>
+
+  <g class="node">
+    <rect x="856" y="655" width="268" height="150" rx="18"></rect>
+    <text class="title" x="884" y="715">PostgreSQL</text>
+    <text class="sub" x="884" y="755">Audit trail</text>
+  </g>
+</svg>
+
+<svg class="diagram compact" viewBox="0 0 800 500" role="img" aria-label={label}>
+  <defs>
+    <pattern id="td-dots-c" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="rgba(255,255,255,0.07)"></circle>
+    </pattern>
+    <marker id="td-arrow-c" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M1 1.5 8.5 5 1 8.5" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+    </marker>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#td-dots-c)"></rect>
+
+  <g class="edges">
+    <path d="M252 205 H289" marker-end="url(#td-arrow-c)"></path>
+    <path d="M507 205 H544" marker-end="url(#td-arrow-c)"></path>
+  </g>
+
+  <g class="node">
+    <rect x="40" y="140" width="210" height="130" rx="16"></rect>
+    <text class="title c" x="62" y="196">Claude</text>
+    <text class="sub c" x="62" y="234">suggests</text>
+  </g>
+  <g class="node risk">
+    <rect x="295" y="140" width="210" height="130" rx="16"></rect>
+    <text class="title c" x="317" y="196">Risk engine</text>
+    <text class="sub c" x="317" y="234">9 rules</text>
+  </g>
+  <g class="node">
+    <rect x="550" y="140" width="210" height="130" rx="16"></rect>
+    <text class="title c" x="572" y="196">Alpaca</text>
+    <text class="sub c" x="572" y="234">paper orders</text>
+  </g>
+
+  {compactPills.map((p) => (
+    <g class:list={["pill", "c", p.tone]}>
+      <rect x={p.x} y="318" width={p.width} height="46" rx="10"></rect>
+      <text x={p.x + p.width / 2} y="349" text-anchor="middle">{p.label}</text>
+    </g>
+  ))}
+</svg>
+
+<style>
+  .diagram {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-sans);
+  }
+
+  .compact {
+    display: none;
+  }
+
+  /* The cover frame is a size container (see ProjectCover). */
+  @container (max-width: 640px) {
+    .full {
+      display: none;
+    }
+
+    .compact {
+      display: block;
+    }
+  }
+
+  .edges path,
+  .flow path {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .edges path {
+    stroke: rgba(255, 255, 255, 0.28);
+  }
+
+  .edges .dashed {
+    stroke-dasharray: 6 8;
+  }
+
+  .flow path {
+    stroke: rgba(255, 255, 255, 0.85);
+    stroke-dasharray: 2 22;
+    animation: flow 1.8s linear infinite;
+  }
+
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
+
+  .edge-labels text {
+    fill: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-mono);
+    font-size: 21px;
+  }
+
+  .node rect {
+    fill: rgba(255, 255, 255, 0.04);
+    stroke: rgba(255, 255, 255, 0.16);
+    stroke-width: 2;
+  }
+
+  .node .title {
+    fill: #fff;
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .node .sub {
+    fill: rgba(255, 255, 255, 0.58);
+    font-size: 23px;
+  }
+
+  .node .title.c {
+    font-size: 29px;
+  }
+
+  .node .sub.c {
+    font-size: 22px;
+  }
+
+  .risk rect {
+    fill: rgba(255, 107, 61, 0.1);
+    stroke: #ff6b3d;
+  }
+
+  .risk .title {
+    fill: #ff8a63;
+  }
+
+  .pill text {
+    font-family: var(--font-mono);
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .pill.c text {
+    font-size: 22px;
+  }
+
+  .buy rect { fill: rgba(74, 222, 128, 0.16); }
+  .buy text { fill: #86efac; }
+  .hold rect { fill: rgba(203, 213, 225, 0.14); }
+  .hold text { fill: #cbd5e1; }
+  .sell rect { fill: rgba(248, 113, 113, 0.16); }
+  .sell text { fill: #fca5a5; }
+  .watch rect { fill: rgba(251, 191, 36, 0.15); }
+  .watch text { fill: #fcd34d; }
+  .avoid rect { fill: rgba(196, 181, 253, 0.15); }
+  .avoid text { fill: #c4b5fd; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow {
+      display: none;
+    }
+  }
+</style>

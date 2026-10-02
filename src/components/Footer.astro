@@ -1,0 +1,47 @@
+---
+import { profile } from "../data/profile";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <p>© {year} {profile.name}</p>
+      <p class="muted">
+        Built with Astro, hosted on GitHub Pages.{" "}
+        <a class="link-underlined" href={profile.sourceRepo} target="_blank" rel="noopener">Source</a>
+      </p>
+      <a class="link back" href="#top">Back to top <span class="arrow" aria-hidden="true">↑</span></a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-bottom: 40px;
+    font-size: 14px;
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+
+  .footer-inner > p:first-child {
+    font-weight: 500;
+  }
+
+  .muted {
+    flex: 1;
+  }
+
+  a.back:hover .arrow {
+    transform: translateY(-2px);
+  }
+</style>

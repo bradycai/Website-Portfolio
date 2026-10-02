@@ -1,0 +1,454 @@
+/* ==========================================================================
+   Brady Cai — global styles
+   Tokens first, then base elements, layout, shared pieces, prose, and motion.
+   Component-specific styles live next to each component.
+   ========================================================================== */
+
+:root {
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  --bg: #f6f5f1;
+  --fg: #171716;
+  --fg-2: #3f3e3a;
+  --muted: #6b6a64;
+  --line: #e2e0d9;
+  --line-strong: #cbc8bf;
+  --surface: #edebe4;
+  --accent: #d6461f;
+  --hover: rgba(23, 23, 22, 0.045);
+  --header-bg: rgba(246, 245, 241, 0.82);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --container: 1200px;
+  --gutter: clamp(20px, 4vw, 40px);
+  --header-h: 68px;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0f0f0e;
+  --fg: #edece7;
+  --fg-2: #c8c6bf;
+  --muted: #9b9991;
+  --line: #272725;
+  --line-strong: #3a3935;
+  --surface: #191917;
+  --accent: #ff6b3d;
+  --hover: rgba(237, 236, 231, 0.06);
+  --header-bg: rgba(15, 15, 14, 0.78);
+
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 24px);
+}
+
+/* Smooth in-page scrolling, but jump instantly while a page transition is running
+   so the morphing elements land where they should. */
+html:not([data-astro-transition]) {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  letter-spacing: -0.006em;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote {
+  margin: 0;
+}
+
+ul, ol {
+  padding: 0;
+  list-style: none;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 550;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+p, li, dd, figcaption {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: -60px;
+  left: 16px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 15px;
+  font-weight: 550;
+  transition: top 0.25s var(--ease-out);
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+/* ---------- Layout ---------- */
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: clamp(48px, 7vw, 96px);
+}
+
+/* A document-style row: a small sticky label on the left, the content on the right. */
+.section-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 24px;
+  padding-top: 24px;
+}
+
+.section-grid::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--gutter);
+  right: var(--gutter);
+  height: 1px;
+  background: var(--line);
+}
+
+.section-label {
+  position: sticky;
+  top: calc(var(--header-h) + 20px);
+  grid-column: 1 / span 3;
+  align-self: start;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.section-body {
+  grid-column: 4 / -1;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .section-label {
+    position: static;
+    grid-column: 1 / -1;
+    margin-bottom: 32px;
+  }
+
+  .section-body {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Shared pieces ---------- */
+
+.muted {
+  color: var(--muted);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Underline that draws in from the left on hover. */
+.link {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+  transition: background-size 0.45s var(--ease-out), color 0.2s;
+}
+
+.link:hover {
+  background-size: 100% 1px;
+}
+
+/* Persistent underline, for links inside running text. */
+.link-underlined {
+  background: linear-gradient(var(--line-strong), var(--line-strong)) no-repeat 0 100% / 100% 1px;
+  transition: background-image 0.2s, color 0.2s;
+}
+
+.link-underlined:hover {
+  color: var(--accent);
+  background-image: linear-gradient(currentColor, currentColor);
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 0.45s var(--ease-out);
+}
+
+a:hover .arrow-right {
+  transform: translateX(3px);
+}
+
+a:hover .arrow-out {
+  transform: translate(2px, -2px);
+}
+
+.dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22a35a;
+  vertical-align: 0.08em;
+}
+
+/* ---------- Case study prose ---------- */
+
+.prose {
+  color: var(--fg-2);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.prose > * + * {
+  margin-top: 1.1em;
+}
+
+.prose h2 {
+  margin-top: 2.4em;
+  color: var(--fg);
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.prose h2 + * {
+  margin-top: 0.7em;
+}
+
+.prose h2:first-child {
+  margin-top: 0;
+}
+
+.prose strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.prose a {
+  color: var(--fg);
+  background: linear-gradient(var(--line-strong), var(--line-strong)) no-repeat 0 100% / 100% 1px;
+}
+
+.prose a:hover {
+  color: var(--accent);
+}
+
+.prose ul,
+.prose ol {
+  display: grid;
+  gap: 0.6em;
+}
+
+.prose ul > li,
+.prose ol > li {
+  position: relative;
+  padding-left: 1.5em;
+}
+
+.prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.2em;
+  top: 0.82em;
+  width: 0.55em;
+  height: 1px;
+  background: var(--accent);
+}
+
+.prose ol {
+  counter-reset: item;
+}
+
+.prose ol > li::before {
+  counter-increment: item;
+  content: counter(item);
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  line-height: 2;
+}
+
+.prose code {
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+}
+
+/* ---------- Motion ---------- */
+
+/* Scroll reveal. Hidden only when JS is running (html.js); see Base.astro. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  filter: blur(6px);
+  transition:
+    opacity 1s var(--ease-out),
+    transform 1s var(--ease-out),
+    filter 1s var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+
+.js [data-reveal="media"] {
+  filter: none;
+  transform: translate3d(0, 28px, 0) scale(0.985);
+  transition-duration: 1.2s;
+}
+
+.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* After a client-side navigation the page transition supplies the motion. */
+.reveal-instant [data-reveal] {
+  transition: none !important;
+}
+
+/* Page transitions (Astro ClientRouter). Named elements morph between pages. */
+::view-transition-group(*) {
+  animation-duration: 0.7s;
+  animation-timing-function: var(--ease-out);
+}
+
+/* The old page leaves quickly; the new one arrives a beat later, so the shared
+   title and cover fly on their own for a moment. */
+::view-transition-old(root) {
+  animation: 220ms var(--ease-out) both vt-leave;
+}
+
+::view-transition-new(root) {
+  animation: 460ms var(--ease-out) 140ms both vt-arrive;
+}
+
+@keyframes vt-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Theme switch: a circle grows from the toggle (driven from JS). */
+.theme-switching * {
+  view-transition-name: none !important;
+}
+
+.theme-switching::view-transition-old(root),
+.theme-switching::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-astro-transition]) {
+    scroll-behavior: auto;
+  }
+
+  .js [data-reveal],
+  .js [data-reveal="media"] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

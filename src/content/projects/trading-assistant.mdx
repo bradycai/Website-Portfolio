@@ -1,0 +1,45 @@
+---
+title: AI Trading Assistant
+summary: A full-stack trading assistant that watches a stock watchlist, asks Claude for structured recommendations, and runs every trade idea through a deterministic risk engine before it can reach the broker.
+kind: Personal project
+period: Jan – Jun 2026
+year: "2026"
+order: 2
+stack: [Python, FastAPI, React, PostgreSQL, Claude API, Alpaca API]
+links:
+  code: https://github.com/bradycai/Stock-Application
+diagram: trading
+tint: "#0f1727"
+---
+
+## How it works
+
+Every ticker on the watchlist is checked against market triggers. When one fires, the backend sends Claude the market data and recent news, and Claude answers with a structured trade intent: **BUY, HOLD, SELL, WATCH, or AVOID**, with a confidence score. Claude has no broker credentials and no order tool, so it can't trade on its own.
+
+Large watchlists are prescreened with rules first, and only the strongest candidates go to Claude, in batches.
+
+## The risk engine
+
+Every intent passes through a deterministic risk engine before it can become an order: once when Claude makes the recommendation, and again right before the order is sent, since prices can move in between. An intent is rejected if it breaks any rule:
+
+1. Trading halts for the day after a 10% loss.
+2. Every order needs a stop loss.
+3. Limit orders only.
+4. No position larger than 10% of the portfolio.
+5. A cap on the number of open positions.
+6. Cash only. An order can't require margin.
+7. No options.
+8. No market orders on penny stocks.
+9. No buying a stock that's up more than 50% on the day.
+
+Claude never chooses share counts; the server computes them. The engine is a pure function covered by 21 unit tests.
+
+## Placing orders
+
+Approved trades go to Alpaca's paper trading API as bracket orders, so the protective stop loss is attached at the broker in the same request as the entry. Each order carries a client order ID, which makes retries safe.
+
+By default, a person approves every trade in the dashboard. An optional autonomous mode, off unless explicitly enabled, applies its own confidence thresholds, and live trading needs a separate confirmation in the server config.
+
+## Managing positions
+
+Open positions are watched for exits: a trailing stop, partial profit-taking at set gain levels, and periodic re-checks of Claude's confidence in the original thesis. The dashboard logs every recommendation, rejection, and order, and PostgreSQL keeps the audit trail.

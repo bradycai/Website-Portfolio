@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    rect { fill: #171716; }
+    path { fill: #f6f5f1; }
+    circle { fill: #ff6b3d; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #edece7; }
+      path { fill: #0f0f0e; }
+    }
+  </style>
+  <rect width="64" height="64" rx="15"/>
+  <!-- A geometric "b" with an accent dot. -->
+  <path d="M19 13h7.5v14.2A11.6 11.6 0 1 1 19 38V13Zm7.5 25a6.1 6.1 0 1 0 12.2 0 6.1 6.1 0 0 0-12.2 0Z"/>
+  <circle cx="47.5" cy="47" r="4.5"/>
+</svg>

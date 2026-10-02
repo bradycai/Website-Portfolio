@@ -1,0 +1,52 @@
+---
+title: Frogs Videography
+summary: A new website for a New England video production company, built in Astro to replace their Squarespace site.
+kind: Client work
+period: Jul – Sep 2026
+year: "2026"
+order: 3
+stack: [Astro, TypeScript, JavaScript, CSS, Netlify]
+links:
+  live: https://frogsvideography.com
+  code: https://github.com/bradycai/FrogsVideography
+cover: ../../assets/projects/frogs/hero.jpg
+coverAlt: Frogs Videography homepage hero with the headline "We help businesses and nonprofits achieve their goals, with video" over a background video.
+tint: "#181b16"
+---
+
+import Figure from "../../components/Figure.astro";
+import calculator from "../../assets/projects/frogs/calculator.jpg";
+import mobile from "../../assets/projects/frogs/mobile.jpg";
+
+## The job
+
+Frogs Videography makes mini documentaries, event recaps, commercials, and fundraising videos for businesses and nonprofits in Massachusetts and Rhode Island. I designed and built a new site to replace their Squarespace one, moved it to Netlify, and stayed on for technical support.
+
+## What's on the site
+
+The homepage walks through the company's services, a portfolio of client videos, the production process, the team, and an ROI calculator that estimates what a video project could open up for a business or nonprofit.
+
+<Figure
+  src={calculator}
+  alt="ROI calculator with sliders for website visitors, leads, social audience, and revenue goal, next to an estimated annual opportunity of $61,250."
+  caption="The ROI calculator. Visitors adjust the sliders and the estimate updates."
+/>
+
+<Figure
+  src={mobile}
+  variant="phone"
+  alt="The Frogs Videography hero on a phone, with the headline, booking button, and project counts."
+  caption="The same hero on a phone."
+/>
+
+## Built to be easy to update
+
+- Nearly all of the copy lives in one config file, grouped by section, so text changes rarely touch the components.
+- Every section can be switched off with a single flag, without deleting code.
+- A portfolio entry only needs a YouTube video ID. The thumbnail, hover state, lazy-loaded player, and alt text are generated from it.
+- The contact form degrades gracefully until an email service is connected.
+- Animations respect the reduced-motion setting.
+
+## Launch
+
+The site is a static Astro build. I moved hosting to Netlify, set up the custom domain, DNS records, redirects, and HTTPS, and handled account access, domain settings, and integrations through the internship.
