@@ -56,4 +56,33 @@ const { cover, coverAlt, diagram, tint } = project.data;
   :global(.cover-link:hover) .shot {
     translate: 0 -10px;
   }
+
+  /* Depth: the screenshot drifts a little against its frame while scrolling past. */
+  @supports (animation-timeline: view()) {
+    .shot {
+      animation: shot-drift linear both;
+    }
+
+    /* animation-timeline lives in its own, more specific rule: CSS minifiers fold it into
+     the animation shorthand, which browsers then reject as invalid. */
+    .cover .shot {
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+
+    @keyframes shot-drift {
+      from {
+        transform: translateY(5%);
+      }
+      to {
+        transform: translateY(-3%);
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shot {
+      animation: none;
+    }
+  }
 </style>

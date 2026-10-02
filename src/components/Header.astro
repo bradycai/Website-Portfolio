@@ -36,6 +36,7 @@ const links = [
           <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"></path>
         </svg>
       </button>
+      <a class="btn btn-primary btn-sm cta" href={url("#contact")}>Get in touch</a>
       <button class="menu-btn" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-menu">
         <span data-menu-label>Menu</span>
       </button>
@@ -135,7 +136,12 @@ const links = [
   .actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
+    margin-left: 8px;
+  }
+
+  .cta {
+    margin-left: 2px;
   }
 
   .icon-btn {
@@ -143,7 +149,6 @@ const links = [
     place-items: center;
     width: 36px;
     height: 36px;
-    margin-right: -8px;
     border-radius: 50%;
     color: var(--muted);
     transition: color 0.2s, background-color 0.2s;
@@ -237,8 +242,8 @@ const links = [
       margin-left: auto;
     }
 
-    .icon-btn {
-      margin-right: 0;
+    .cta {
+      display: none;
     }
 
     .menu-btn {

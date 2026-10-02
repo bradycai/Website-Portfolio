@@ -1,0 +1,160 @@
+---
+// A slow, endless strip of the tools Brady works with (Simple Icons, CC0).
+import {
+  siTypescript,
+  siJavascript,
+  siReact,
+  siNextdotjs,
+  siAstro,
+  siNodedotjs,
+  siExpress,
+  siPython,
+  siFastapi,
+  siFlask,
+  siPostgresql,
+  siSqlite,
+  siSwift,
+  siOpenjdk,
+  siTailwindcss,
+  siVite,
+  siGit,
+  siNetlify,
+  siClaude,
+} from "simple-icons";
+
+const icons = [
+  { icon: siTypescript, name: "TypeScript" },
+  { icon: siReact, name: "React" },
+  { icon: siNextdotjs, name: "Next.js" },
+  { icon: siAstro, name: "Astro" },
+  { icon: siPython, name: "Python" },
+  { icon: siFastapi, name: "FastAPI" },
+  { icon: siPostgresql, name: "PostgreSQL" },
+  { icon: siClaude, name: "Claude API" },
+  { icon: siSwift, name: "Swift" },
+  { icon: siOpenjdk, name: "Java" },
+  { icon: siNodedotjs, name: "Node.js" },
+  { icon: siExpress, name: "Express" },
+  { icon: siTailwindcss, name: "Tailwind CSS" },
+  { icon: siSqlite, name: "SQLite" },
+  { icon: siFlask, name: "Flask" },
+  { icon: siJavascript, name: "JavaScript" },
+  { icon: siVite, name: "Vite" },
+  { icon: siGit, name: "Git" },
+  { icon: siNetlify, name: "Netlify" },
+];
+---
+
+<section class="logos" aria-labelledby="logos-title">
+  <div class="container logos-inner">
+    <h2 class="logos-title" id="logos-title">Tools I build with</h2>
+    <div class="marquee">
+      {[0, 1].map((copy) => (
+        <ul class="track" aria-hidden={copy === 1 ? "true" : undefined}>
+          {icons.map(({ icon, name }) => (
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icon.path} /></svg>
+              <span>{name}</span>
+            </li>
+          ))}
+        </ul>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .logos {
+    padding-block: clamp(20px, 3vw, 32px) clamp(40px, 5vw, 64px);
+  }
+
+  .logos-inner {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 24px;
+    align-items: center;
+  }
+
+  .logos-title {
+    grid-column: 1 / span 3;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .marquee {
+    grid-column: 4 / -1;
+    display: flex;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
+
+  .track {
+    display: flex;
+    flex: none;
+    gap: 40px;
+    padding-right: 40px;
+    animation: marquee 48s linear infinite;
+  }
+
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.25s;
+  }
+
+  li:hover {
+    color: var(--fg);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+
+  @media (max-width: 900px) {
+    .logos-title {
+      grid-column: 1 / -1;
+      margin-bottom: 16px;
+    }
+
+    .marquee {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    .track {
+      flex-wrap: wrap;
+      gap: 14px 28px;
+      animation: none;
+    }
+
+    .track[aria-hidden] {
+      display: none;
+    }
+  }
+</style>

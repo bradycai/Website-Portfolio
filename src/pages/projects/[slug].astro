@@ -2,6 +2,8 @@
 import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import ProjectCover from "../../components/ProjectCover.astro";
+import Stats from "../../components/Stats.astro";
+import Story from "../../components/Story.astro";
 import { url } from "../../lib/url";
 
 export async function getStaticPaths() {
@@ -14,7 +16,7 @@ export async function getStaticPaths() {
 
 const { project, next } = Astro.props;
 const { Content } = await render(project);
-const { title, summary, kind, period, stack, award, links } = project.data;
+const { title, summary, kind, period, stack, award, links, stats, story, tint } = project.data;
 ---
 
 <Base title={title} description={summary}>
@@ -30,7 +32,10 @@ const { title, summary, kind, period, stack, award, links } = project.data;
 
     <div class="container case-cover">
       <ProjectCover project={project} priority sizes="(min-width: 1240px) 1200px, 100vw" />
+      <div class="case-stats"><Stats stats={stats} size="lg" /></div>
     </div>
+
+    {story && <Story title={`How ${title} works`} tint={tint} steps={story} />}
 
     <div class="container case-body">
       <aside class="case-meta" aria-label="Project details">
@@ -69,9 +74,13 @@ const { title, summary, kind, period, stack, award, links } = project.data;
     </div>
 
     <nav class="container case-next" aria-label="Next project">
-      <a class="next-link" href={url(`projects/${next.id}/`)}>
-        <span class="muted">Next project</span>
-        <span class="next-title">{next.data.title} <span class="arrow arrow-right" aria-hidden="true">→</span></span>
+      <a class="next-link cover-link" href={url(`projects/${next.id}/`)}>
+        <span class="next-text">
+          <span class="muted">Next project</span>
+          <span class="next-title"><span transition:name={`title-${next.id}`}>{next.data.title}</span> <span class="arrow arrow-right" aria-hidden="true">→</span></span>
+          <span class="next-summary muted">{next.data.summary}</span>
+        </span>
+        <span class="next-cover"><ProjectCover project={next} sizes="(min-width: 900px) 480px, 100vw" /></span>
       </a>
     </nav>
   </article>
@@ -88,6 +97,11 @@ const { title, summary, kind, period, stack, award, links } = project.data;
     transform-origin: left;
     transform: scaleX(0);
     animation: progress linear both;
+  }
+
+  /* animation-timeline lives in its own, more specific rule: CSS minifiers fold it into
+     the animation shorthand, which browsers then reject as invalid. */
+  :root .progress {
     animation-timeline: scroll(root);
   }
 
@@ -153,6 +167,10 @@ const { title, summary, kind, period, stack, award, links } = project.data;
     margin-top: clamp(40px, 6vw, 72px);
   }
 
+  .case-stats {
+    margin-top: clamp(24px, 3vw, 36px);
+  }
+
   .case-body {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -196,10 +214,29 @@ const { title, summary, kind, period, stack, award, links } = project.data;
 
   .next-link {
     display: grid;
-    gap: 6px;
-    padding-top: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 24px 48px;
+    padding-top: 28px;
     border-top: 1px solid var(--line);
     font-size: 15px;
+  }
+
+  .next-text {
+    display: grid;
+    gap: 6px;
+  }
+
+  .next-summary {
+    max-width: 44ch;
+    margin-top: 6px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 760px) {
+    .next-link {
+      grid-template-columns: 1fr;
+    }
   }
 
   .next-title {

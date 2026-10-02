@@ -3,11 +3,42 @@ import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
 import Base from "../layouts/Base.astro";
 import ProjectCover from "../components/ProjectCover.astro";
+import LogoWall from "../components/LogoWall.astro";
+import Stats from "../components/Stats.astro";
+import IsoDrawing from "../components/IsoDrawing.astro";
 import headshot from "../assets/headshot.jpg";
 import { profile, primaryEmail, experience, education, skills, moreProjects } from "../data/profile";
 import { url } from "../lib/url";
 
 const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+
+// The same three ideas run through the case studies; each card points back to its proof.
+const principles = [
+  {
+    fig: "0.1",
+    drawing: "layers" as const,
+    title: "AI for judgment, never arithmetic",
+    body: "In OrderSync, Claude reads order emails and drafts replies. Stock math, duplicate detection, and deadlines stay in plain TypeScript.",
+    href: url("projects/ordersync/"),
+    link: "OrderSync",
+  },
+  {
+    fig: "0.2",
+    drawing: "gates" as const,
+    title: "Guardrails before automation",
+    body: "The trading assistant checks every trade idea against nine deterministic rules, twice, before an order can reach the broker.",
+    href: url("projects/trading-assistant/"),
+    link: "AI Trading Assistant",
+  },
+  {
+    fig: "0.3",
+    drawing: "modules" as const,
+    title: "Built to hand off",
+    body: "The Frogs Videography site keeps its copy in one config file, and any of its 17 sections can be switched off with a single flag.",
+    href: url("projects/frogs-videography/"),
+    link: "Frogs Videography",
+  },
+];
 
 // Each letter of the name rises on its own, so split it up (the h1 keeps a plain label).
 let charIndex = 0;
@@ -46,7 +77,15 @@ const personJsonLd = {
       </h1>
 
       <div class="hero-row">
-        <p class="hero-intro hero-in" style="--d: 0">{profile.intro}</p>
+        <div class="hero-lead">
+          <p class="hero-intro two-tone hero-in" style="--d: 0">
+            {profile.introLead} <span class="dim">{profile.introRest}</span>
+          </p>
+          <div class="hero-actions hero-in" style="--d: 2">
+            <a class="btn btn-primary" href="#contact">Get in touch</a>
+            <a class="btn btn-secondary" href="#work">See my work <span class="arrow" aria-hidden="true">↓</span></a>
+          </div>
+        </div>
 
         <dl class="hero-facts">
           <div class="hero-in" style="--d: 1">
@@ -78,14 +117,20 @@ const personJsonLd = {
     </div>
   </section>
 
+  <LogoWall />
+
   <!-- ===================== Work ===================== -->
   <section class="section" id="work" aria-labelledby="work-title">
     <div class="container section-grid">
       <h2 class="section-label" id="work-title">Selected work</h2>
-      <ol class="section-body projects">
+      <div class="section-body">
+      <p class="lede two-tone work-lede" data-reveal>
+        Three projects, end to end. <span class="dim">A hackathon win, a trading system with hard guardrails, and a client site that’s live today.</span>
+      </p>
+      <ol class="projects">
         {projects.map((project) => {
           const href = url(`projects/${project.id}/`);
-          const { title, kind, year, award, summary, stack, links } = project.data;
+          const { title, kind, year, award, summary, stack, links, stats } = project.data;
           return (
             <li class="project">
               <a class="cover-link" href={href} tabindex="-1" aria-hidden="true" data-reveal="media">
@@ -101,6 +146,7 @@ const personJsonLd = {
                 <div class="project-text">
                   {award && <p class="award">{award}</p>}
                   <p class="summary">{summary}</p>
+                  <div class="project-stats"><Stats stats={stats} /></div>
                   <p class="stack muted">{stack.join(", ")}</p>
                   <p class="project-links">
                     <a class="link" href={href}>Read the case study <span class="arrow arrow-right" aria-hidden="true">→</span></a>
@@ -113,6 +159,30 @@ const personJsonLd = {
           );
         })}
       </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== How I build ===================== -->
+  <section class="section" id="approach" aria-labelledby="approach-title">
+    <div class="container section-grid">
+      <h2 class="section-label" id="approach-title">How I build</h2>
+      <div class="section-body">
+        <p class="lede two-tone" data-reveal>
+          The same three ideas show up in every project. <span class="dim">Each one links to the project it came from.</span>
+        </p>
+        <ul class="principles">
+          {principles.map((p, i) => (
+            <li class="principle spotlight" data-reveal style={`--i: ${i}`}>
+              <p class="fig">FIG {p.fig}</p>
+              <div class="principle-art"><IsoDrawing kind={p.drawing} /></div>
+              <h3>{p.title}</h3>
+              <p class="principle-body">{p.body}</p>
+              <a class="link principle-link" href={p.href}>{p.link} <span class="arrow arrow-right" aria-hidden="true">→</span></a>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -184,18 +254,13 @@ const personJsonLd = {
     <div class="container section-grid">
       <h2 class="section-label" id="about-title">About</h2>
       <div class="section-body">
-        <div class="about-text" data-reveal>
-          <p>
-            I’m a computer science and business student at Northeastern’s Khoury College, graduating in 2028. Since
-            September 2026 I’ve been a software engineer co-op at NExT Consulting, working on RepoPulse.
-          </p>
-          <p>
-            Most of my projects land where software meets day-to-day operations: an order tracker for sellers on four
-            marketplaces, a trading assistant that checks every idea against hard rules, and a new website for a New
-            England video production company. When AI is involved, it handles the fuzzy parts, like reading an email or
-            drafting a reply, and the math stays in plain code with tests.
-          </p>
-        </div>
+        <p class="about-statement fill-block">
+          <span class="fill-text">
+            I study computer science and business at Northeastern’s Khoury College, graduating in 2028. Since September
+            2026 I’ve been a software engineer co-op at NExT Consulting, working on RepoPulse. Most of my projects land
+            where software meets day-to-day operations: orders, trades, and the websites small businesses run on.
+          </span>
+        </p>
 
         <div class="about-grid">
           <div class="about-block" data-reveal>
@@ -335,12 +400,44 @@ const personJsonLd = {
     }
   }
 
-  .hero-intro {
+  .hero-lead {
     grid-column: 1 / span 5;
+  }
+
+  .hero-intro {
     max-width: 30ch;
     font-size: clamp(20px, 1.7vw, 23px);
     line-height: 1.42;
     letter-spacing: -0.015em;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  /* As the page scrolls away, the big name recedes (the header name takes over). */
+  @supports (animation-timeline: scroll()) {
+    .hero-name {
+      transform-origin: left bottom;
+      animation: name-recede linear both;
+    }
+
+    /* animation-timeline lives in its own, more specific rule: CSS minifiers fold it into
+     the animation shorthand, which browsers then reject as invalid. */
+    .hero .hero-name {
+      animation-timeline: scroll(root);
+      animation-range: 0 75vh;
+    }
+
+    @keyframes name-recede {
+      to {
+        opacity: 0.12;
+        transform: translateY(-5vh) scale(0.96);
+      }
+    }
   }
 
   .hero-facts {
@@ -385,6 +482,7 @@ const personJsonLd = {
 
   .hero-portrait {
     grid-column: 11 / span 2;
+    align-self: start;
     justify-self: end;
     width: 100%;
     max-width: 168px;
@@ -417,7 +515,7 @@ const personJsonLd = {
   }
 
   @media (max-width: 1024px) {
-    .hero-intro {
+    .hero-lead {
       grid-column: 1 / span 8;
     }
 
@@ -439,15 +537,21 @@ const personJsonLd = {
       column-gap: 20px;
     }
 
+    .hero-lead {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin-top: 24px;
+    }
+
     .hero-intro {
-      grid-column: 1;
-      grid-row: 1;
       font-size: 19px;
     }
 
     .hero-portrait {
-      grid-column: 2;
+      grid-column: 1;
       grid-row: 1;
+      justify-self: start;
+      max-width: 96px;
     }
 
     .hero-facts {
@@ -461,6 +565,14 @@ const personJsonLd = {
   }
 
   /* ---------- Work ---------- */
+
+  .work-lede {
+    margin-bottom: clamp(40px, 6vw, 64px);
+  }
+
+  .project-stats {
+    margin-top: 20px;
+  }
 
   .projects {
     display: grid;
@@ -685,17 +797,95 @@ const personJsonLd = {
 
   /* ---------- About ---------- */
 
-  .about-text {
-    display: grid;
-    gap: 1em;
-    max-width: 38em;
-    font-size: clamp(19px, 1.6vw, 21px);
-    line-height: 1.55;
-    letter-spacing: -0.012em;
+  .about-statement {
+    max-width: 26em;
+    font-size: clamp(24px, 2.6vw, 36px);
+    font-weight: 500;
+    font-stretch: 94%;
+    line-height: 1.24;
+    letter-spacing: -0.028em;
   }
 
-  .about-text p + p {
+  /* ---------- How I build ---------- */
+
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: clamp(36px, 5vw, 56px);
+  }
+
+  .principle {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px 22px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    transition: border-color 0.3s;
+  }
+
+  .principle:hover {
+    border-color: var(--line-strong);
+  }
+
+  .fig {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+  }
+
+  .principle-art {
+    margin: 10px -6px 14px;
+  }
+
+  .principle h3 {
+    font-size: 18px;
+    letter-spacing: -0.02em;
+  }
+
+  .principle-body {
+    flex: 1;
+    margin-top: 8px;
     color: var(--fg-2);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .principle-link {
+    align-self: flex-start;
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 1080px) {
+    .principles {
+      grid-template-columns: 1fr;
+    }
+
+    .principle {
+      display: grid;
+      grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+      grid-template-rows: auto auto 1fr auto;
+      column-gap: 24px;
+    }
+
+    .principle .fig {
+      grid-column: 1 / -1;
+    }
+
+    .principle-art {
+      grid-row: 2 / span 3;
+      margin: 8px 0 0;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .principle {
+      display: flex;
+    }
   }
 
   .about-grid {
@@ -845,6 +1035,10 @@ const personJsonLd = {
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .hero-name {
+      animation: none !important;
+    }
+
     .ch,
     .hero-in,
     .hero-row::before,

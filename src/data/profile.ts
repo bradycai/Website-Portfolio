@@ -4,8 +4,9 @@
 export const profile = {
   name: "Brady Cai",
   title: "Software Engineer",
-  intro:
-    "I’m a software engineer studying computer science and business at Northeastern. I build full-stack products: dashboards, client websites, and AI tools that keep a person in the loop.",
+  // Shown in two tones: the lead in full ink, the rest quieter.
+  introLead: "I’m a software engineer studying computer science and business at Northeastern.",
+  introRest: "I build full-stack products: dashboards, client websites, and AI tools that keep a person in the loop.",
   location: "Boston, MA",
   timeZone: "America/New_York",
   now: "Software Engineer Co-op at NExT Consulting",

@@ -1,0 +1,197 @@
+---
+// Small isometric line drawings for the "How I build" cards, in the style of a
+// technical figure. Geometry is generated, so each shape is a true isometric box.
+interface Props {
+  kind: "layers" | "gates" | "modules";
+}
+
+const { kind } = Astro.props;
+
+type P3 = [number, number, number];
+
+const S = 16; // pixels per unit
+const O = { x: 160, y: 96 }; // screen origin
+
+// Track the drawn extent so the viewBox can be fitted (and centered) afterwards.
+const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+const project = ([x, y, z]: P3) => {
+  const sx = O.x + (x - y) * 0.866 * S;
+  const sy = O.y + (x + y) * 0.5 * S - z * S;
+  bounds.minX = Math.min(bounds.minX, sx);
+  bounds.maxX = Math.max(bounds.maxX, sx);
+  bounds.minY = Math.min(bounds.minY, sy);
+  bounds.maxY = Math.max(bounds.maxY, sy);
+  return [sx, sy] as const;
+};
+const pt = (p: P3) => project(p).map((n) => n.toFixed(1)).join(" ");
+const poly = (pts: P3[]) => `M${pts.map(pt).join(" L")} Z`;
+const seg = (a: P3, b: P3) => `M${pt(a)} L${pt(b)}`;
+
+/** Visible faces (top, right, front) of a box, back faces culled. */
+function box(x: number, y: number, z: number, w: number, d: number, h: number) {
+  const t = z + h;
+  return {
+    top: poly([[x, y, t], [x + w, y, t], [x + w, y + d, t], [x, y + d, t]]),
+    right: poly([[x + w, y, z], [x + w, y + d, z], [x + w, y + d, t], [x + w, y, t]]),
+    front: poly([[x, y + d, z], [x + w, y + d, z], [x + w, y + d, t], [x, y + d, t]]),
+  };
+}
+
+type Shape = { d: string; cls: string };
+const shapes: Shape[] = [];
+const add = (d: string, cls = "") => shapes.push({ d, cls });
+const addBox = (b: ReturnType<typeof box>, cls = "") => {
+  add(b.right, `face side ${cls}`);
+  add(b.front, `face side ${cls}`);
+  add(b.top, `face ${cls}`);
+};
+
+if (kind === "layers") {
+  // Judgment on top, arithmetic underneath: a plain grid plate with a lighter plate floating above.
+  addBox(box(0, 0, 0, 6, 6, 0.5));
+  for (let i = 1; i < 6; i++) {
+    add(seg([i, 0, 0.5], [i, 6, 0.5]), "grid");
+    add(seg([0, i, 0.5], [6, i, 0.5]), "grid");
+  }
+  for (const [x, y] of [[0, 6], [6, 6], [6, 0]] as const) add(seg([x, y, 0.5], [x, y, 3.2]), "dash");
+  addBox(box(0, 0, 3.2, 6, 6, 0.4), "accent");
+  // A loose, hand-drawn-feeling curve on the judgment layer.
+  const curve = [[0.8, 4.6], [2, 3.2], [3.2, 3.9], [4.2, 2.2], [5.3, 1.4]] as const;
+  add("M" + curve.map(([x, y]) => pt([x, y, 3.6])).join(" L"), "accent-line");
+  for (const [x, y] of curve) add(`M${pt([x, y, 3.6])} m-2.5 0 a2.5 2.5 0 1 0 5 0 a2.5 2.5 0 1 0 -5 0`, "accent-dot");
+}
+
+if (kind === "gates") {
+  // An intent passing through a row of checkpoints before it becomes an order.
+  add(poly([[-1.5, -0.5, 0], [8.5, -0.5, 0], [8.5, 3.5, 0], [-1.5, 3.5, 0]]), "floor");
+  const gates = [0.5, 2.8, 5.1];
+  // Back half of the path first, so the gates draw over it.
+  add(seg([-1.5, 1.5, 1.4], [8.2, 1.5, 1.4]), "path");
+  gates.forEach((gx, i) => {
+    const cls = i === 1 ? "accent" : "";
+    add(poly([[gx, 0, 0], [gx, 3, 0], [gx, 3, 2.8], [gx, 0, 2.8]]), `gate ${cls}`);
+    add(poly([[gx, 0.55, 0.55], [gx, 2.45, 0.55], [gx, 2.45, 2.25], [gx, 0.55, 2.25]]), `gate-inner ${cls}`);
+  });
+  addBox(box(7.6, 1, 1, 1, 1, 1), "accent");
+}
+
+if (kind === "modules") {
+  // Sections as blocks on a base: some switched on (raised), some off (flat), one lifted out.
+  addBox(box(0, 0, 0, 7, 7, 0.4));
+  const cells: [number, number, number][] = [];
+  const on = new Set(["0,0", "1,0", "0,1", "2,1", "1,2", "2,2", "0,2"]);
+  for (let gy = 0; gy < 3; gy++) for (let gx = 0; gx < 3; gx++) cells.push([gx, gy, on.has(`${gx},${gy}`) ? 1.1 : 0.25]);
+  // Painter's order: back to front.
+  cells.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+  for (const [gx, gy, h] of cells) {
+    const x = 0.5 + gx * 2.1;
+    const y = 0.5 + gy * 2.1;
+    if (gx === 2 && gy === 0) {
+      add(seg([x + 0.8, y + 0.8, 0.4], [x + 0.8, y + 0.8, 2.6]), "dash");
+      addBox(box(x, y, 2.6, 1.6, 1.6, 1.1), "accent");
+    } else {
+      addBox(box(x, y, 0.4, 1.6, 1.6, h));
+    }
+  }
+}
+// Fit the drawing into a 16:10 box with even padding on every side.
+const pad = 14;
+const aspect = 16 / 10;
+let vw = bounds.maxX - bounds.minX + pad * 2;
+let vh = bounds.maxY - bounds.minY + pad * 2;
+if (vw / vh < aspect) vw = vh * aspect;
+else vh = vw / aspect;
+const cx = (bounds.minX + bounds.maxX) / 2;
+const cy = (bounds.minY + bounds.maxY) / 2;
+const viewBox = [cx - vw / 2, cy - vh / 2, vw, vh].map((n) => n.toFixed(1)).join(" ");
+---
+
+<svg class="iso" viewBox={viewBox} aria-hidden="true">
+  {shapes.map((s) => <path d={s.d} class={s.cls} />)}
+</svg>
+
+<style>
+  .iso {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    color: var(--fg);
+  }
+
+  path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    stroke-opacity: 0.55;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Faces are filled with the card color so hidden edges stay hidden. */
+  .face {
+    fill: var(--card, var(--bg));
+  }
+
+  .face.side {
+    fill: color-mix(in srgb, var(--card, var(--bg)) 92%, var(--fg));
+  }
+
+  .grid {
+    stroke-opacity: 0.25;
+  }
+
+  .dash {
+    stroke-dasharray: 3 4;
+    stroke-opacity: 0.4;
+  }
+
+  .floor {
+    stroke-opacity: 0.2;
+    stroke-dasharray: 2 4;
+  }
+
+  .path {
+    stroke: var(--accent);
+    stroke-opacity: 0.9;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 5;
+    animation: march 1.6s linear infinite;
+  }
+
+  .gate-inner {
+    stroke-opacity: 0.3;
+  }
+
+  .accent {
+    stroke: var(--accent);
+    stroke-opacity: 0.95;
+  }
+
+  .face.accent {
+    fill: color-mix(in srgb, var(--card, var(--bg)) 90%, var(--accent));
+  }
+
+  .accent-line {
+    stroke: var(--accent);
+    stroke-opacity: 0.9;
+    stroke-width: 1.4;
+  }
+
+  .accent-dot {
+    fill: var(--card, var(--bg));
+    stroke: var(--accent);
+    stroke-opacity: 1;
+  }
+
+  @keyframes march {
+    to {
+      stroke-dashoffset: -18;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .path {
+      animation: none;
+    }
+  }
+</style>

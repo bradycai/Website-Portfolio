@@ -18,6 +18,9 @@
   --accent: #d6461f;
   --hover: rgba(23, 23, 22, 0.045);
   --header-bg: rgba(246, 245, 241, 0.82);
+  --card: #fbfaf7;
+  --spot: rgba(214, 70, 31, 0.08);
+  --fill-base: color-mix(in srgb, var(--fg) 22%, var(--bg));
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -40,6 +43,8 @@
   --accent: #ff6b3d;
   --hover: rgba(237, 236, 231, 0.06);
   --header-bg: rgba(15, 15, 14, 0.78);
+  --card: #141413;
+  --spot: rgba(255, 107, 61, 0.1);
 
   color-scheme: dark;
 }
@@ -275,6 +280,161 @@ a:hover .arrow-out {
   vertical-align: 0.08em;
 }
 
+/* Two thin rails along the content edges, like a blueprint frame. */
+.rails {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.rails::before,
+.rails::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+  opacity: 0.7;
+}
+
+.rails::before {
+  left: max(var(--gutter), calc(50% - var(--container) / 2));
+}
+
+.rails::after {
+  right: max(var(--gutter), calc(50% - var(--container) / 2));
+}
+
+@media (max-width: 760px) {
+  .rails {
+    display: none;
+  }
+}
+
+/* Pill buttons. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    border-color 0.25s,
+    transform 0.25s var(--ease-out);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.btn-primary:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-secondary {
+  border-color: var(--line-strong);
+}
+
+.btn-secondary:hover {
+  border-color: var(--fg);
+}
+
+.btn-sm {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+/* Lead sentence in ink, the rest in a quieter tone. */
+.two-tone {
+  color: var(--fg);
+}
+
+.two-tone .dim {
+  color: var(--muted);
+}
+
+.lede {
+  max-width: 24em;
+  font-size: clamp(26px, 2.7vw, 38px);
+  font-weight: 500;
+  font-stretch: 94%;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* A soft light that follows the cursor across a card. */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+}
+
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 0%), var(--spot), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+/* Text that fills in as it scrolls through the viewport, line by line. */
+.fill-block {
+  view-timeline: --fill block;
+}
+
+@supports (animation-timeline: view()) {
+  .fill-text {
+    color: transparent;
+    background-image:
+      linear-gradient(var(--fg), var(--fg)),
+      linear-gradient(var(--fill-base), var(--fill-base));
+    background-size: 0% 100%, 100% 100%;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: fill-text linear both;
+  }
+
+  /* animation-timeline lives in its own, more specific rule: CSS minifiers fold it into
+     the animation shorthand, which browsers then reject as invalid. */
+  .fill-block .fill-text {
+    animation-timeline: --fill;
+    animation-range: entry 55% cover 62%;
+  }
+
+  @keyframes fill-text {
+    to {
+      background-size: 100% 100%, 100% 100%;
+    }
+  }
+}
+
 /* ---------- Case study prose ---------- */
 
 .prose {
@@ -444,6 +604,12 @@ a:hover .arrow-out {
     transform: none;
     filter: none;
     transition: none;
+  }
+
+  .fill-text {
+    animation: none !important;
+    color: var(--fg) !important;
+    background: none !important;
   }
 
   ::view-transition-group(*),

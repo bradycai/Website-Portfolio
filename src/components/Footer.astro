@@ -1,12 +1,68 @@
 ---
 import { profile } from "../data/profile";
+import { url } from "../lib/url";
 
 const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: "Site",
+    links: [
+      { label: "Work", href: url("#work") },
+      { label: "Experience", href: url("#experience") },
+      { label: "About", href: url("#about") },
+      { label: "Contact", href: url("#contact") },
+    ],
+  },
+  {
+    title: "Case studies",
+    links: [
+      { label: "OrderSync", href: url("projects/ordersync/") },
+      { label: "AI Trading Assistant", href: url("projects/trading-assistant/") },
+      { label: "Frogs Videography", href: url("projects/frogs-videography/") },
+    ],
+  },
+  {
+    title: "Elsewhere",
+    links: [
+      { label: "GitHub", href: profile.github, external: true },
+      { label: "LinkedIn", href: profile.linkedin, external: true },
+      ...profile.emails.map((e) => ({ label: e.address, href: `mailto:${e.address}` })),
+    ],
+  },
+];
 ---
 
 <footer class="site-footer">
   <div class="container">
-    <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-id">
+        <p class="footer-name">{profile.name}</p>
+        <p class="muted">{profile.title} in {profile.location}</p>
+      </div>
+      {columns.map((col) => (
+        <nav class="footer-col" aria-label={col.title}>
+          <p class="muted">{col.title}</p>
+          <ul>
+            {col.links.map((link) => (
+              <li>
+                <a
+                  class="link"
+                  href={link.href}
+                  target={"external" in link ? "_blank" : undefined}
+                  rel={"external" in link ? "noopener" : undefined}
+                >
+                  {link.label}
+                  {"external" in link && <>{" "}<span class="arrow arrow-out" aria-hidden="true">↗</span></>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+
+    <div class="footer-bottom">
       <p>© {year} {profile.name}</p>
       <p class="muted">
         Built with Astro, hosted on GitHub Pages.{" "}
@@ -19,29 +75,94 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
-    padding-bottom: 40px;
-    font-size: 14px;
+    margin-top: clamp(32px, 5vw, 64px);
+    padding-bottom: 36px;
+    font-size: 14.5px;
   }
 
-  .footer-inner {
+  .footer-top {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+
+  .footer-id {
+    grid-column: 1 / span 3;
+  }
+
+  .footer-name {
+    margin-bottom: 2px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .footer-col {
+    grid-column: span 3;
+  }
+
+  .footer-col p {
+    margin-bottom: 10px;
+  }
+
+  .footer-col ul {
+    display: grid;
+    gap: 6px;
+  }
+
+  .footer-col a {
+    overflow-wrap: anywhere;
+  }
+
+  .footer-bottom {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 10px 32px;
-    padding-top: 24px;
+    gap: 8px 32px;
+    margin-top: clamp(40px, 6vw, 72px);
+    padding-top: 18px;
     border-top: 1px solid var(--line);
+    font-size: 13.5px;
   }
 
-  .footer-inner > p:first-child {
+  .footer-bottom > p:first-child {
     font-weight: 500;
   }
 
-  .muted {
+  .footer-bottom .muted {
     flex: 1;
   }
 
   a.back:hover .arrow {
     transform: translateY(-2px);
+  }
+
+  @media (max-width: 900px) {
+    .footer-id {
+      grid-column: 1 / -1;
+    }
+
+    .footer-col {
+      grid-column: span 4;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .footer-bottom {
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .footer-col {
+      grid-column: span 6;
+    }
+
+    .footer-col:last-child {
+      grid-column: 1 / -1;
+    }
   }
 </style>

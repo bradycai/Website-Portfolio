@@ -229,6 +229,48 @@ function setupClock() {
   clockTimer = window.setInterval(tick, 15_000);
 }
 
+/* ---------- Sticky story: the step crossing the middle of the screen is active ---------- */
+
+let storyWatcher: IntersectionObserver | undefined;
+
+function setupStory() {
+  storyWatcher?.disconnect();
+  const story = document.querySelector<HTMLElement>("[data-story]");
+  if (!story || !("IntersectionObserver" in window)) return;
+  const parts = (attr: string) => [...story.querySelectorAll<HTMLElement>(`[${attr}]`)];
+  const steps = parts("data-step");
+  const shots = parts("data-shot");
+  const dots = parts("data-dot");
+  const activate = (index: number) => {
+    for (const group of [steps, shots, dots]) {
+      group.forEach((el, n) => el.classList.toggle("is-active", n === index));
+    }
+  };
+  storyWatcher = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) activate(Number((entry.target as HTMLElement).dataset.step));
+      }
+    },
+    { rootMargin: "-50% 0px -50% 0px" }
+  );
+  steps.forEach((step) => storyWatcher!.observe(step));
+}
+
+/* ---------- Spotlight: cards light up around the cursor ---------- */
+
+document.addEventListener(
+  "pointermove",
+  (event) => {
+    const card = (event.target as Element | null)?.closest?.<HTMLElement>(".spotlight");
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+    card.style.setProperty("--my", `${event.clientY - rect.top}px`);
+  },
+  { passive: true }
+);
+
 /* ---------- Wire up ---------- */
 
 function init() {
@@ -238,6 +280,7 @@ function init() {
   setupMenu();
   setupCopy();
   setupClock();
+  setupStory();
   lastY = window.scrollY;
   syncHeader();
 }
@@ -256,5 +299,6 @@ document.addEventListener("astro:before-swap", () => {
   setMenu(false);
   revealer?.disconnect();
   nameWatcher?.disconnect();
+  storyWatcher?.disconnect();
   clearInterval(clockTimer);
 });

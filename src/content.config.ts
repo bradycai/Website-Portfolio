@@ -15,6 +15,12 @@ const projects = defineCollection({
       order: z.number(),
       stack: z.array(z.string()),
       award: z.string().optional(),
+      // Three real numbers shown under the project, e.g. { value: "9", label: "risk rules" }.
+      stats: z.array(z.object({ value: z.string(), label: z.string() })),
+      // Optional sticky walkthrough on the case study page.
+      story: z
+        .array(z.object({ title: z.string(), body: z.string(), image: image(), alt: z.string() }))
+        .optional(),
       links: z.object({
         code: z.string().optional(),
         live: z.string().optional(),

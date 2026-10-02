@@ -1,0 +1,85 @@
+---
+// A row of real, specific numbers for a project, in the style of a case study module.
+interface Props {
+  stats: { value: string; label: string }[];
+  size?: "sm" | "lg";
+}
+
+const { stats, size = "sm" } = Astro.props;
+---
+
+<dl class:list={["stats", size]}>
+  {stats.map((stat) => (
+    <div>
+      <dt>{stat.label}</dt>
+      <dd>{stat.value}</dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    border-top: 1px solid var(--line);
+  }
+
+  .stats > div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 14px 16px 0 0;
+  }
+
+  .stats > div + div {
+    padding-left: 16px;
+    border-left: 1px solid var(--line);
+  }
+
+  dd {
+    font-size: 28px;
+    font-weight: 520;
+    font-stretch: 88%;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  dt {
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.35;
+  }
+
+  .lg dd {
+    font-size: clamp(36px, 4.4vw, 56px);
+  }
+
+  .lg dt {
+    font-size: 15px;
+  }
+
+  .lg > div {
+    padding-top: 20px;
+    gap: 8px;
+  }
+
+  @media (max-width: 520px) {
+    .stats > div {
+      padding-right: 10px;
+    }
+
+    .stats > div + div {
+      padding-left: 10px;
+    }
+
+    dd {
+      font-size: 24px;
+    }
+
+    dt {
+      font-size: 12.5px;
+    }
+  }
+</style>
