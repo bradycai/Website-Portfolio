@@ -1,0 +1,230 @@
+---
+// Live-ish GitHub panel: language mix (a part-to-whole stacked bar) and recent pushes.
+// Data is fetched at build time; the site rebuilds daily (see .github/workflows/deploy.yml).
+import { getGitHubSnapshot } from "../lib/github";
+import { profile } from "../data/profile";
+
+const snapshot = await getGitHubSnapshot();
+
+const pct = (share: number) => {
+  const p = share * 100;
+  return p >= 10 ? Math.round(p).toString() : p.toFixed(1);
+};
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+// Segments take categorical slots in order; "Other" is always the neutral gray.
+const languages = (snapshot?.languages ?? []).map((l, i) => ({
+  ...l,
+  label: pct(l.share),
+  color: l.name === "Other" ? "var(--series-other)" : `var(--series-${i + 1})`,
+}));
+const summary = languages.map((l) => `${l.name} ${l.label}%`).join(", ");
+---
+
+{snapshot && (
+  <div class="gh" data-reveal>
+    <div class="gh-head">
+      <h3 class="gh-title">Live from GitHub</h3>
+      <p class="muted">
+        Rebuilt daily from the GitHub API · {snapshot.repoCount} public repositories
+      </p>
+    </div>
+
+    <figure class="lang">
+      <figcaption class="muted">Languages across my repositories, by share of code</figcaption>
+      <div class="lang-bar" role="img" aria-label={`Language mix: ${summary}`}>
+        {languages.map((l) => (
+          <span
+            class="seg"
+            style={`--share: ${l.share}; --c: ${l.color}`}
+            tabindex="0"
+            data-tip={`${l.label}% ${l.name}`}
+            aria-label={`${l.name}: ${l.label}%`}
+          />
+        ))}
+      </div>
+      <ul class="lang-legend">
+        {languages.map((l) => (
+          <li>
+            <i style={`--c: ${l.color}`} aria-hidden="true" />
+            <span>{l.name}</span>
+            <span class="lang-pct">{l.label}%</span>
+          </li>
+        ))}
+      </ul>
+    </figure>
+
+    <div class="recent">
+      <p class="muted recent-title">Recently pushed</p>
+      <ul>
+        {snapshot.recent.map((r) => (
+          <li>
+            <a class="link recent-name" href={r.url} target="_blank" rel="noopener">{r.name}</a>
+            <span class="muted recent-meta">
+              {r.language && <>{r.language} · </>}
+              <time datetime={r.pushedAt} data-relative>{fmtDate(r.pushedAt)}</time>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <a class="link recent-all" href={profile.github} target="_blank" rel="noopener">
+        All repositories <span class="arrow arrow-out" aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </div>
+)}
+
+<style>
+  .gh {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 24px 40px;
+    margin-top: clamp(40px, 6vw, 64px);
+    padding: clamp(18px, 3vw, 28px);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--card);
+  }
+
+  .gh-head {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 16px;
+    font-size: 14px;
+  }
+
+  .gh-title {
+    font-size: 18px;
+    letter-spacing: -0.02em;
+  }
+
+  .lang figcaption {
+    margin-bottom: 12px;
+    font-size: 13.5px;
+  }
+
+  /* Part-to-whole bar: 12px thick, 2px surface gaps between segments, rounded only at the ends. */
+  .lang-bar {
+    display: flex;
+    gap: 2px;
+    height: 12px;
+  }
+
+  .seg {
+    position: relative;
+    flex: var(--share) 1 0;
+    min-width: 3px;
+    background: var(--c);
+    outline-offset: 2px;
+    transition: filter 0.2s;
+  }
+
+  .seg:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+
+  .seg:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+
+  .seg:hover,
+  .seg:focus-visible {
+    filter: brightness(1.12) saturate(1.1);
+  }
+
+  /* Hover and keyboard focus show the same readout; the legend carries every value too. */
+  .seg::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: var(--fg);
+    color: var(--bg);
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 4px);
+    transition: opacity 0.15s, transform 0.2s var(--ease-out);
+  }
+
+  .seg:hover::after,
+  .seg:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .lang-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-top: 14px;
+    font-size: 13.5px;
+  }
+
+  .lang-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .lang-legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--c);
+  }
+
+  .lang-pct {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .recent-title {
+    margin-bottom: 8px;
+    font-size: 13.5px;
+  }
+
+  .recent ul {
+    display: grid;
+    gap: 8px;
+  }
+
+  .recent li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+    font-size: 15px;
+  }
+
+  .recent-name {
+    font-weight: 550;
+  }
+
+  .recent-meta {
+    font-size: 13.5px;
+  }
+
+  .recent-all {
+    display: inline-flex;
+    gap: 4px;
+    margin-top: 14px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 760px) {
+    .gh {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -13,6 +13,7 @@ const links = [
   { href: url("#experience"), label: "Experience" },
   { href: url("#about"), label: "About" },
   { href: url("#contact"), label: "Contact" },
+  { href: url("resume/"), label: "Résumé" },
 ];
 ---
 
@@ -27,6 +28,13 @@ const links = [
     </nav>
 
     <div class="actions">
+      <button class="cmd-btn" type="button" data-palette-open aria-label="Open command menu" aria-keyshortcuts="Meta+K Control+K">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"></circle>
+          <path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+        </svg>
+        <kbd data-kbd-hint>⌘K</kbd>
+      </button>
       <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch to dark theme">
         <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7Z"></path>
@@ -144,6 +152,43 @@ const links = [
     margin-left: 2px;
   }
 
+  .cmd-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 8px 0 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--muted);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .cmd-btn:hover {
+    border-color: var(--fg);
+    color: var(--fg);
+  }
+
+  .cmd-btn kbd {
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--hover);
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+
+  /* Mid widths: keep the nav, drop the pill CTA (Contact is still in the nav). */
+  @media (max-width: 1080px) {
+    .cta {
+      display: none;
+    }
+
+    .nav-links {
+      gap: 20px;
+    }
+  }
+
   .icon-btn {
     display: grid;
     place-items: center;
@@ -242,7 +287,14 @@ const links = [
       margin-left: auto;
     }
 
-    .cta {
+    .cmd-btn {
+      width: 36px;
+      padding: 0;
+      justify-content: center;
+      border-color: transparent;
+    }
+
+    .cmd-btn kbd {
       display: none;
     }
 

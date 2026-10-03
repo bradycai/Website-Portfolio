@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Rebuild daily so the "Live from GitHub" panel stays current.
+  schedule:
+    - cron: "23 13 * * *"
   workflow_dispatch:
 
 permissions:
@@ -17,6 +20,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Read-only token for the build-time GitHub API calls (higher rate limit).
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7

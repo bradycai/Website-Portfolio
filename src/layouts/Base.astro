@@ -4,6 +4,7 @@ import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import CommandPalette from "../components/CommandPalette.astro";
 import { profile } from "../data/profile";
 import { url } from "../lib/url";
 
@@ -11,17 +12,20 @@ interface Props {
   title?: string;
   description?: string;
   isHome?: boolean;
+  /** Social preview image, relative to the site root. */
+  image?: string;
 }
 
 const {
   title,
   description = "Brady Cai is a software engineer studying computer science and business at Northeastern University, open to summer 2027 internships.",
   isHome = false,
+  image = "og-image.png",
 } = Astro.props;
 
 const pageTitle = title ? `${title} · ${profile.name}` : `${profile.name} · ${profile.title}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const ogImage = new URL(url("og-image.png"), Astro.site);
+const ogImage = new URL(url(image), Astro.site);
 ---
 
 <!doctype html>
@@ -88,7 +92,15 @@ const ogImage = new URL(url("og-image.png"), Astro.site);
       <slot />
     </main>
     <Footer />
+    <CommandPalette />
     <p class="sr-only" role="status" data-copy-status></p>
+    <div class="toast" role="status" data-toast></div>
+    <dialog class="lightbox" data-lightbox aria-label="Enlarged image">
+      <img data-lightbox-img alt="" />
+      <button class="lightbox-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      </button>
+    </dialog>
 
     <script>
       import "../scripts/site.ts";

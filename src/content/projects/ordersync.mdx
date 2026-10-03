@@ -31,6 +31,8 @@ coverAlt: OrderSync overview dashboard with order totals, a stock shortage callo
 tint: "#20392b"
 ---
 
+import StockDemo from "../../components/StockDemo.astro";
+
 ## The problem
 
 A small brand selling on Shopify, TikTok Shop, Amazon, and eBay gets its orders as four separate streams of notification emails. Nothing adds up stock across them, so the same hoodie can sell out on three storefronts at once before anyone notices.
@@ -40,6 +42,8 @@ A small brand selling on Shopify, TikTok Shop, Amazon, and eBay gets its orders 
 OrderSync pulls every order into one table, keeps a running count of committed stock, and keeps a **Needs attention** queue for anything about to go wrong: stock shortages, overdue shipments, and products it can't match with confidence.
 
 Routine warnings, like an overdue shipment that only needs a follow-up, can be cleared by the AI assistant in one click. Critical issues, shortages, and uncertain matches always stay with the seller. For those, the seller picks a resolution (a delay, a partial shipment, a refund, or a stock correction) and Claude drafts the customer message.
+
+<StockDemo />
 
 ## How it's built
 

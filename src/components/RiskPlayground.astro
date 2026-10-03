@@ -1,0 +1,189 @@
+---
+// Interactive: a simplified model of the trading assistant's nine risk rules for a buy order.
+// Behavior lives in src/scripts/demos.ts.
+const rules = [
+  "Daily-loss kill switch",
+  "Stop loss attached",
+  "Limit order",
+  "Position at most 10% of the portfolio",
+  "Fewer than 3 open positions",
+  "Cash covers the order (no margin)",
+  "Not an options contract",
+  "No market orders on penny stocks",
+  "Not up more than 50% today",
+];
+
+const ranges = [
+  { name: "size", label: "Position size", min: 1, max: 25, value: 8 },
+  { name: "cash", label: "Cash available", min: 0, max: 100, value: 60 },
+  { name: "price", label: "Share price", min: 1, max: 200, value: 42 },
+  { name: "move", label: "Stock’s move today", min: -20, max: 80, value: 6 },
+  { name: "pnl", label: "Portfolio today", min: -15, max: 5, value: -2 },
+  { name: "open", label: "Open positions", min: 0, max: 5, value: 1 },
+];
+---
+
+<section class="playground" data-risk aria-labelledby="risk-title">
+  <p class="pg-kicker">Interactive</p>
+  <h3 class="pg-title" id="risk-title">Try the risk engine</h3>
+  <p class="pg-note">
+    A simplified model of the nine rules for a buy order on a $10,000 paper portfolio. Change the order and watch which
+    rules fail.
+  </p>
+
+  <div class="pg-body">
+    <form class="pg-controls" data-risk-form>
+      <div class="pg-segmented" role="radiogroup" aria-label="Order type">
+        <label><input type="radio" name="type" value="limit" checked /> Limit order</label>
+        <label><input type="radio" name="type" value="market" /> Market order</label>
+      </div>
+      <label class="pg-switch">Stop loss attached <input type="checkbox" name="stop" checked /></label>
+      <label class="pg-switch">Options contract <input type="checkbox" name="option" /></label>
+      {ranges.map((r) => (
+        <label class="pg-field">
+          <span class="pg-field-top">
+            {r.label} <output data-out={r.name}></output>
+          </span>
+          <input class="pg-range" type="range" name={r.name} min={r.min} max={r.max} value={r.value} />
+        </label>
+      ))}
+    </form>
+
+    <div class="risk-result">
+      <ol class="risk-rules">
+        {rules.map((rule, i) => (
+          <li data-rule={i}>
+            <span class="mark" aria-hidden="true"></span>
+            <span class="rule-text">
+              <span class="rule-name">{rule}</span>
+              <span class="rule-detail" data-rule-detail></span>
+            </span>
+          </li>
+        ))}
+      </ol>
+      <p class="verdict" data-risk-verdict role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .risk-result {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+  }
+
+  .risk-rules {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: rule;
+  }
+
+  .risk-rules li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    transition: background-color 0.25s;
+  }
+
+  .risk-rules li::before {
+    content: none;
+  }
+
+  .risk-rules li.fail {
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+  }
+
+  .mark {
+    position: relative;
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: color-mix(in srgb, #22a35a 16%, transparent);
+    transition: background-color 0.25s;
+  }
+
+  /* Check mark by default, cross when the rule fails. */
+  .mark::before,
+  .mark::after {
+    content: "";
+    position: absolute;
+    border-radius: 2px;
+    background: #1f9a52;
+    transition: transform 0.3s var(--ease-out), background-color 0.25s;
+  }
+
+  .mark::before {
+    left: 4px;
+    top: 9px;
+    width: 5px;
+    height: 1.8px;
+    transform: rotate(45deg);
+  }
+
+  .mark::after {
+    left: 6.5px;
+    top: 8px;
+    width: 8px;
+    height: 1.8px;
+    transform: rotate(-50deg);
+  }
+
+  .fail .mark {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .fail .mark::before,
+  .fail .mark::after {
+    left: 4.5px;
+    top: 8.1px;
+    width: 9px;
+    background: var(--accent);
+  }
+
+  .fail .mark::before {
+    transform: rotate(45deg);
+  }
+
+  .fail .mark::after {
+    transform: rotate(-45deg);
+  }
+
+  .rule-text {
+    display: grid;
+  }
+
+  .rule-name {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .rule-detail {
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  .verdict {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: color-mix(in srgb, #22a35a 12%, transparent);
+    font-size: 14px;
+    line-height: 1.45;
+    transition: background-color 0.3s;
+  }
+
+  .verdict.rejected {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .verdict :global(strong) {
+    font-weight: 650;
+  }
+</style>

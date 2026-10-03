@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
 
 interface Props {
@@ -12,12 +12,17 @@ interface Props {
 
 const { src, alt, caption, variant = "wide" } = Astro.props;
 const sizes = variant === "phone" ? "320px" : "(min-width: 1100px) 820px, 100vw";
+// A sharper copy for the click-to-zoom view.
+const zoom = await getImage({ src, width: Math.min(src.width, 2400), format: "webp" });
 ---
 
 <figure class:list={["figure", variant]} data-reveal="media">
-  <div class="frame">
+  <button class="frame zoomable" type="button" data-zoom={zoom.src} data-zoom-alt={alt} aria-label={`Enlarge image: ${alt}`}>
     <Image src={src} alt={alt} widths={variant === "phone" ? [320, 640, 960] : [720, 1080, 1640, 2400]} sizes={sizes} />
-  </div>
+    <span class="zoom-hint" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </span>
+  </button>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
@@ -27,10 +32,15 @@ const sizes = variant === "phone" ? "320px" : "(min-width: 1100px) 820px, 100vw"
   }
 
   .frame {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 12px;
     background: var(--surface);
+    cursor: zoom-in;
   }
 
   .frame :global(img) {

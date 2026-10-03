@@ -1,20 +1,25 @@
 ---
 // Sticky walkthrough: steps scroll on the left while the matching screenshot
 // stays pinned on the right and crossfades as each step reaches the middle.
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
 
 interface Props {
+  id?: string;
   title: string;
   tint: string;
   steps: { title: string; body: string; image: ImageMetadata; alt: string }[];
 }
 
-const { title, tint, steps } = Astro.props;
+const { id, title, tint, steps } = Astro.props;
 const shotWidths = [720, 1080, 1440, 2160];
+// Sharper copies for the click-to-zoom view.
+const zooms = await Promise.all(
+  steps.map((s) => getImage({ src: s.image, width: Math.min(s.image.width, 2400), format: "webp" }))
+);
 ---
 
-<section class="story" data-story aria-label={title}>
+<section class="story" id={id} data-story aria-label={title}>
   <div class="container story-grid">
     <div class="story-steps">
       <h2 class="story-title">{title}</h2>
@@ -23,29 +28,38 @@ const shotWidths = [720, 1080, 1440, 2160];
           <p class="story-n tabular">{String(i + 1).padStart(2, "0")}</p>
           <h3>{step.title}</h3>
           <p class="story-body">{step.body}</p>
-          <div class="story-inline" style={`--tint: ${tint}`}>
+          <button
+            class="story-inline"
+            type="button"
+            style={`--tint: ${tint}`}
+            data-zoom={zooms[i].src}
+            data-zoom-alt={step.alt}
+            aria-label={`Enlarge image: ${step.alt}`}
+          >
             <Image src={step.image} alt={step.alt} widths={shotWidths} sizes="100vw" />
-          </div>
+          </button>
         </div>
       ))}
     </div>
 
-    <div class="story-media" aria-hidden="true">
-      <div class="story-frame" style={`--tint: ${tint}`}>
+    <div class="story-media">
+      <button class="story-frame" type="button" style={`--tint: ${tint}`} data-zoom-active aria-label="Enlarge the current screenshot">
         {steps.map((step, i) => (
           <Image
             class:list={["story-shot", { "is-active": i === 0 }]}
             data-shot={i}
+            data-zoom-src={zooms[i].src}
+            data-zoom-alt={step.alt}
             src={step.image}
             alt=""
             widths={shotWidths}
             sizes="(min-width: 1240px) 700px, 58vw"
           />
         ))}
-        <div class="story-dots">
+        <span class="story-dots" aria-hidden="true">
           {steps.map((_, i) => <span class:list={{ "is-active": i === 0 }} data-dot={i}></span>)}
-        </div>
-      </div>
+        </span>
+      </button>
     </div>
   </div>
 </section>
@@ -121,6 +135,11 @@ const shotWidths = [720, 1080, 1440, 2160];
   .story-frame {
     position: sticky;
     top: calc(var(--header-h) + 8vh);
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    cursor: zoom-in;
     aspect-ratio: 16 / 10;
     overflow: hidden;
     border-radius: 14px;
@@ -189,6 +208,9 @@ const shotWidths = [720, 1080, 1440, 2160];
 
     .story-inline {
       display: block;
+      width: 100%;
+      border: 0;
+      cursor: zoom-in;
       margin-top: 20px;
       padding: 5% 5% 0;
       overflow: hidden;

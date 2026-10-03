@@ -1,0 +1,176 @@
+---
+// Interactive: OrderSync's stock math and idempotent imports, in miniature.
+// Behavior lives in src/scripts/demos.ts.
+const channels = [
+  { key: "shopify", label: "Shopify", sold: 2, color: "#5e8e3e" },
+  { key: "tiktok", label: "TikTok Shop", sold: 2, color: "#fe2c55" },
+  { key: "amazon", label: "Amazon", sold: 0, color: "#ff9900" },
+  { key: "ebay", label: "eBay", sold: 2, color: "#0064d2" },
+];
+---
+
+<section class="playground" data-stock aria-labelledby="stock-title">
+  <p class="pg-kicker">Interactive</p>
+  <h3 class="pg-title" id="stock-title">Try the stock math</h3>
+  <p class="pg-note">One SKU, four storefronts. The same kind of rules OrderSync runs on the server, in miniature.</p>
+
+  <div class="pg-body">
+    <div class="pg-controls">
+      <div class="pg-stepper" data-stepper="stock" data-value="5">
+        <span>Units in stock</span>
+        <span class="pg-stepper-controls">
+          <button type="button" data-delta="-1" aria-label="One fewer unit in stock">−</button>
+          <output>5</output>
+          <button type="button" data-delta="1" aria-label="One more unit in stock">+</button>
+        </span>
+      </div>
+      {channels.map((c) => (
+        <div class="pg-stepper" data-stepper={c.key} data-value={c.sold} data-label={c.label}>
+          <span class="channel"><i style={`background:${c.color}`} aria-hidden="true"></i>Sold on {c.label}</span>
+          <span class="pg-stepper-controls">
+            <button type="button" data-delta="-1" aria-label={`One fewer sold on ${c.label}`}>−</button>
+            <output>{c.sold}</output>
+            <button type="button" data-delta="1" aria-label={`One more sold on ${c.label}`}>+</button>
+          </span>
+        </div>
+      ))}
+      <div class="stock-actions">
+        <button class="pg-button" type="button" data-reimport>Import Shopify order #1042 again</button>
+        <button class="pg-button" type="button" data-neworder>Import a new Shopify order</button>
+      </div>
+    </div>
+
+    <div class="stock-result">
+      <p class="stock-sku">Heavyweight Hoodie · Black / M</p>
+      <p class="stock-math" data-stock-math></p>
+      <div class="stock-alert" data-stock-alert role="status" aria-live="polite"></div>
+      <div>
+        <p class="stock-log-title">Import log</p>
+        <ol class="stock-log" data-stock-log>
+          <li class="muted">Imports will show up here.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .channel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .channel i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .stock-actions {
+    display: grid;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .stock-result {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+  }
+
+  .stock-sku {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  .stock-math {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--hover);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stock-math :global(strong) {
+    font-weight: 700;
+  }
+
+  .stock-math :global(.neg) {
+    color: var(--accent);
+  }
+
+  .stock-alert {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.45;
+    transition: border-color 0.25s, background-color 0.25s;
+  }
+
+  .stock-alert :global(.sev) {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .stock-alert.critical {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  }
+
+  .stock-alert.critical :global(.sev) {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+  }
+
+  .stock-alert.low :global(.sev) {
+    background: rgba(202, 138, 4, 0.16);
+    color: #a16207;
+  }
+
+  .stock-alert.ok :global(.sev) {
+    background: rgba(34, 163, 90, 0.14);
+    color: #1f9a52;
+  }
+
+  :global([data-theme="dark"]) .stock-alert.low :global(.sev) {
+    color: #fbbf24;
+  }
+
+  :global([data-theme="dark"]) .stock-alert.ok :global(.sev) {
+    color: #4ade80;
+  }
+
+  .stock-log-title {
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  .stock-log {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  .stock-log :global(li) {
+    padding-left: 0;
+  }
+
+  .stock-log :global(li)::before {
+    content: none;
+  }
+</style>

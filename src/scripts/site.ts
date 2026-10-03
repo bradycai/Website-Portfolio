@@ -3,6 +3,11 @@
 // `astro:page-load`, which fires after each client-side navigation. Every
 // listener is attached through `bind`, so running setup twice is harmless.
 
+import { setupPalette } from "./palette";
+import { setupDemos } from "./demos";
+import { showToast } from "./toast";
+import { setupLightbox } from "./lightbox";
+
 const root = document.documentElement;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -271,6 +276,89 @@ document.addEventListener(
   { passive: true }
 );
 
+/* ---------- Relative times ("12 days ago"), kept fresh between daily builds ---------- */
+
+function setupRelativeTimes() {
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  const units: [Intl.RelativeTimeFormatUnit, number][] = [
+    ["year", 365 * 86400],
+    ["month", 30 * 86400],
+    ["week", 7 * 86400],
+    ["day", 86400],
+    ["hour", 3600],
+    ["minute", 60],
+  ];
+  document.querySelectorAll<HTMLTimeElement>("time[data-relative]").forEach((el) => {
+    const seconds = (new Date(el.dateTime).getTime() - Date.now()) / 1000;
+    if (Number.isNaN(seconds)) return;
+    const [unit, size] = units.find(([, s]) => Math.abs(seconds) >= s) ?? ["minute", 60];
+    el.title = el.textContent ?? "";
+    el.textContent = rtf.format(Math.round(seconds / size), unit);
+  });
+}
+
+/* ---------- Case study: "On this page" follows the section in view ---------- */
+
+let tocTargets: { link: HTMLElement; target: HTMLElement }[] = [];
+let tocQueued = false;
+
+function syncToc() {
+  tocQueued = false;
+  if (!tocTargets.length) return;
+  const line = window.innerHeight * 0.3;
+  let current = tocTargets[0];
+  for (const entry of tocTargets) {
+    if (entry.target.getBoundingClientRect().top <= line) current = entry;
+  }
+  for (const entry of tocTargets) {
+    if (entry === current) entry.link.setAttribute("aria-current", "true");
+    else entry.link.removeAttribute("aria-current");
+  }
+}
+
+function setupToc() {
+  tocTargets = [...document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")]
+    .map((link) => ({ link, target: document.getElementById(link.hash.slice(1))! }))
+    .filter((entry) => entry.target);
+  syncToc();
+}
+
+window.addEventListener(
+  "scroll",
+  () => {
+    if (tocQueued || !tocTargets.length) return;
+    tocQueued = true;
+    requestAnimationFrame(syncToc);
+  },
+  { passive: true }
+);
+
+/* ---------- Case study headings get a "#" link that copies the section URL ---------- */
+
+function setupHeadingAnchors() {
+  document.querySelectorAll<HTMLElement>(".case-prose h2[id]").forEach((heading) => {
+    if (heading.querySelector(".anchor")) return;
+    const anchor = document.createElement("a");
+    anchor.className = "anchor";
+    anchor.href = `#${heading.id}`;
+    anchor.setAttribute("aria-label", `Copy link to “${heading.textContent}”`);
+    anchor.textContent = "#";
+    anchor.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const link = `${location.origin}${location.pathname}#${heading.id}`;
+      history.replaceState(history.state, "", `#${heading.id}`);
+      heading.scrollIntoView({ behavior: reducedMotion.matches ? "auto" : "smooth" });
+      try {
+        await navigator.clipboard.writeText(link);
+        showToast("Link copied");
+      } catch {
+        // Clipboard unavailable; the URL bar already shows the section link.
+      }
+    });
+    heading.append(anchor);
+  });
+}
+
 /* ---------- Wire up ---------- */
 
 function init() {
@@ -281,6 +369,12 @@ function init() {
   setupCopy();
   setupClock();
   setupStory();
+  setupPalette();
+  setupDemos();
+  setupRelativeTimes();
+  setupToc();
+  setupHeadingAnchors();
+  setupLightbox();
   lastY = window.scrollY;
   syncHeader();
 }

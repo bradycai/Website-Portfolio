@@ -6,6 +6,7 @@ import ProjectCover from "../components/ProjectCover.astro";
 import LogoWall from "../components/LogoWall.astro";
 import Stats from "../components/Stats.astro";
 import IsoDrawing from "../components/IsoDrawing.astro";
+import GitHubActivity from "../components/GitHubActivity.astro";
 import headshot from "../assets/headshot.jpg";
 import { profile, primaryEmail, experience, education, skills, moreProjects } from "../data/profile";
 import { url } from "../lib/url";
@@ -228,7 +229,8 @@ const personJsonLd = {
   <section class="section" id="more" aria-labelledby="more-title">
     <div class="container section-grid">
       <h2 class="section-label" id="more-title">More projects</h2>
-      <ul class="section-body more">
+      <div class="section-body">
+      <ul class="more">
         {moreProjects.map((item, i) => (
           <li data-reveal style={`--i: ${i}`}>
             <a class="more-row" href={item.url} target="_blank" rel="noopener">
@@ -239,13 +241,9 @@ const personJsonLd = {
             </a>
           </li>
         ))}
-        <li data-reveal style={`--i: ${moreProjects.length}`}>
-          <a class="more-row more-all" href={profile.github} target="_blank" rel="noopener">
-            <span class="more-name">Everything else on GitHub</span>
-            <span class="arrow arrow-out more-arrow" aria-hidden="true">↗</span>
-          </a>
-        </li>
       </ul>
+      <GitHubActivity />
+      </div>
     </div>
   </section>
 

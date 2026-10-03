@@ -15,11 +15,17 @@ export async function getStaticPaths() {
 }
 
 const { project, next } = Astro.props;
-const { Content } = await render(project);
+const { Content, headings } = await render(project);
 const { title, summary, kind, period, stack, award, links, stats, story, tint } = project.data;
+
+// "On this page": the walkthrough (if any) plus every h2 in the write-up.
+const toc = [
+  ...(story ? [{ slug: "walkthrough", text: `How ${title} works` }] : []),
+  ...headings.filter((h) => h.depth === 2).map((h) => ({ slug: h.slug, text: h.text })),
+];
 ---
 
-<Base title={title} description={summary}>
+<Base title={title} description={summary} image={`og/${project.id}.png`}>
   <div class="progress" aria-hidden="true"></div>
 
   <article class="case">
@@ -35,10 +41,11 @@ const { title, summary, kind, period, stack, award, links, stats, story, tint } 
       <div class="case-stats"><Stats stats={stats} size="lg" /></div>
     </div>
 
-    {story && <Story title={`How ${title} works`} tint={tint} steps={story} />}
+    {story && <Story id="walkthrough" title={`How ${title} works`} tint={tint} steps={story} />}
 
     <div class="container case-body">
       <aside class="case-meta" aria-label="Project details">
+        <div class="case-meta-inner">
         <dl>
           <div>
             <dt>Type</dt>
@@ -66,6 +73,17 @@ const { title, summary, kind, period, stack, award, links, stats, story, tint } 
             </dd>
           </div>
         </dl>
+        {toc.length > 1 && (
+          <nav class="toc" aria-label="On this page">
+            <p class="muted">On this page</p>
+            <ol>
+              {toc.map((h) => (
+                <li><a href={`#${h.slug}`} data-toc-link>{h.text}</a></li>
+              ))}
+            </ol>
+          </nav>
+        )}
+        </div>
       </aside>
 
       <div class="prose case-prose">
@@ -182,9 +200,12 @@ const { title, summary, kind, period, stack, award, links, stats, story, tint } 
     grid-column: 1 / span 3;
   }
 
-  .case-meta dl {
+  .case-meta-inner {
     position: sticky;
     top: calc(var(--header-h) + 24px);
+  }
+
+  .case-meta dl {
     display: grid;
     gap: 18px;
     font-size: 15px;
@@ -194,6 +215,41 @@ const { title, summary, kind, period, stack, award, links, stats, story, tint } 
   .case-meta dt {
     margin-bottom: 2px;
     color: var(--muted);
+  }
+
+  .toc {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 14.5px;
+  }
+
+  .toc p {
+    margin-bottom: 8px;
+  }
+
+  .toc ol {
+    display: grid;
+    gap: 2px;
+    border-left: 1px solid var(--line);
+  }
+
+  .toc a {
+    display: block;
+    margin-left: -1px;
+    padding: 4px 0 4px 12px;
+    border-left: 1px solid transparent;
+    color: var(--muted);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .toc a:hover {
+    color: var(--fg);
+  }
+
+  .toc a[aria-current="true"] {
+    border-left-color: var(--accent);
+    color: var(--fg);
   }
 
   .case-links {
@@ -264,10 +320,17 @@ const { title, summary, kind, period, stack, award, links, stats, story, tint } 
       border-bottom: 1px solid var(--line);
     }
 
-    .case-meta dl {
+    .case-meta-inner {
       position: static;
+    }
+
+    .case-meta dl {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px 24px;
+    }
+
+    .toc {
+      display: none;
     }
   }
 

@@ -1,0 +1,366 @@
+---
+import Base from "../layouts/Base.astro";
+import { profile } from "../data/profile";
+import { resume } from "../data/resume";
+import { url } from "../lib/url";
+
+const siteUrl = new URL(url(""), Astro.site);
+const contact: { label: string; href?: string }[] = [
+  { label: profile.location },
+  ...profile.emails.map((e) => ({ label: e.address, href: `mailto:${e.address}` })),
+  { label: "linkedin.com/in/bradycai", href: profile.linkedin },
+  { label: "github.com/bradycai", href: profile.github },
+];
+const portfolio = { label: siteUrl.host + siteUrl.pathname.replace(/\/$/, ""), href: siteUrl.href };
+---
+
+<Base title="Résumé" description="Brady Cai's résumé: software engineering experience, projects, education, and skills.">
+  <div class="container resume-page">
+    <div class="toolbar">
+      <a class="back link" href={url("")}><span class="arrow" aria-hidden="true">←</span> Back to the site</a>
+      <div class="toolbar-actions">
+        <p class="muted toolbar-note">One page, ready to print.</p>
+        <button class="btn btn-primary btn-sm" type="button" data-print>Save as PDF</button>
+      </div>
+    </div>
+
+    <article class="paper" aria-label="Résumé">
+      <header class="cv-head">
+        <h1>{profile.name}</h1>
+        <p class="cv-contact">
+          {contact.map((c, i) => (
+            <>
+              {i > 0 && <span class="sep" aria-hidden="true">|</span>}
+              {c.href ? <a href={c.href}>{c.label}</a> : <span>{c.label}</span>}
+            </>
+          ))}
+        </p>
+        <p class="cv-availability">
+          Availability: {resume.availability} <span class="sep" aria-hidden="true">|</span> Portfolio:{" "}
+          <a href={portfolio.href}>{portfolio.label}</a>
+        </p>
+      </header>
+
+      <section class="cv-section">
+        <h2>Education</h2>
+        <div class="cv-entry">
+          <div class="cv-line">
+            <strong>{resume.education.school}</strong>
+            <span>{resume.education.location}</span>
+          </div>
+          <div class="cv-line cv-sub">
+            <em>{resume.education.degree}</em>
+            <em>{resume.education.date}</em>
+          </div>
+          <ul>
+            <li>Coursework: {resume.education.coursework.join(", ")}</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="cv-section">
+        <h2>Professional Experience</h2>
+        {resume.experience.map((job) => (
+          <div class="cv-entry">
+            <div class="cv-line">
+              <strong>{job.role}</strong>
+              <span>{job.period}</span>
+            </div>
+            <div class="cv-line cv-sub">
+              <em>{job.company}</em>
+              <em>{job.location}</em>
+            </div>
+            <ul>
+              {job.bullets.map((b) => <li>{b}</li>)}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section class="cv-section">
+        <h2>Projects</h2>
+        {resume.projects.map((p) => (
+          <div class="cv-entry">
+            <div class="cv-line">
+              <span><strong>{p.name}</strong> | <em>{p.note}</em></span>
+              <span>{p.period}</span>
+            </div>
+            <ul>
+              {p.bullets.map((b) => <li>{b}</li>)}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section class="cv-section">
+        <h2>Technical Skills</h2>
+        <dl class="cv-skills">
+          {resume.skills.map((s) => (
+            <div>
+              <dt>{s.label}:</dt>
+              <dd>{s.items}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </article>
+  </div>
+</Base>
+
+<script>
+  // Inline per-page script: re-binds after client-side navigation.
+  const bindPrint = () => {
+    const button = document.querySelector<HTMLButtonElement>("[data-print]");
+    if (button && !button.dataset.bound) {
+      button.dataset.bound = "1";
+      button.addEventListener("click", () => window.print());
+    }
+  };
+  bindPrint();
+  document.addEventListener("astro:page-load", bindPrint);
+</script>
+
+<style>
+  .resume-page {
+    padding-top: calc(var(--header-h) + clamp(24px, 5vh, 56px));
+    padding-bottom: clamp(48px, 8vw, 96px);
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    max-width: 8.5in;
+    margin: 0 auto 20px;
+  }
+
+  .back {
+    display: inline-flex;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .back:hover {
+    color: var(--fg);
+  }
+
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .toolbar-note {
+    font-size: 14px;
+  }
+
+  /* On screen the résumé sits on a sheet of paper; in print it is the page. */
+  .paper {
+    max-width: 8.5in;
+    margin-inline: auto;
+    padding: 0.55in 0.6in 0.6in;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    color: #111;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 30px 60px -30px rgba(0, 0, 0, 0.25);
+    font-family: var(--font-sans);
+    font-size: 10.4pt;
+    line-height: 1.36;
+    letter-spacing: 0;
+  }
+
+  .cv-head {
+    text-align: center;
+  }
+
+  .cv-head h1 {
+    font-size: 25pt;
+    font-weight: 600;
+    font-stretch: 90%;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .cv-contact {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 6px;
+    margin-top: 6px;
+    font-size: 9.6pt;
+  }
+
+  .cv-contact a,
+  .cv-availability a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: #bbb;
+    text-underline-offset: 2px;
+  }
+
+  .sep {
+    color: #999;
+  }
+
+  .cv-availability {
+    margin-top: 2px;
+    font-size: 9.6pt;
+  }
+
+  .cv-section {
+    margin-top: 10px;
+  }
+
+  .cv-section h2 {
+    margin-bottom: 5px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #111;
+    font-size: 11pt;
+    font-weight: 600;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  .cv-entry + .cv-entry {
+    margin-top: 6px;
+  }
+
+  .cv-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .cv-line strong {
+    font-weight: 600;
+  }
+
+  .cv-sub {
+    font-size: 9.8pt;
+  }
+
+  .cv-entry ul {
+    margin-top: 2px;
+    padding-left: 1.1em;
+    list-style: disc;
+  }
+
+  .cv-entry li {
+    padding-left: 0.15em;
+    text-wrap: wrap;
+  }
+
+  .cv-skills {
+    display: grid;
+    gap: 1px;
+  }
+
+  .cv-skills div {
+    display: flex;
+    gap: 5px;
+  }
+
+  .cv-skills dt {
+    flex: none;
+    font-weight: 600;
+  }
+
+  /* Screens only: a printed letter page is about 720px wide and must keep the one-line layout. */
+  @media screen and (max-width: 760px) {
+    .paper {
+      padding: 28px 22px;
+      font-size: 13px;
+    }
+
+    .cv-head h1 {
+      font-size: 30px;
+    }
+
+    .cv-line {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .cv-skills div {
+      display: block;
+    }
+
+    .toolbar-note {
+      display: none;
+    }
+  }
+
+  @media print {
+    @page {
+      size: letter;
+      margin: 0.4in 0.5in;
+    }
+
+    .toolbar {
+      display: none;
+    }
+
+    .resume-page {
+      max-width: none;
+      padding: 0;
+    }
+
+    .paper {
+      max-width: none;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      font-size: 9.5pt;
+      line-height: 1.25;
+    }
+
+    .cv-head h1 {
+      font-size: 22pt;
+    }
+
+    .cv-section {
+      margin-top: 7px;
+    }
+
+    .cv-section h2 {
+      margin-bottom: 3px;
+    }
+
+    .cv-entry + .cv-entry {
+      margin-top: 4px;
+    }
+
+    .cv-contact a,
+    .cv-availability a {
+      text-decoration: none;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Printing the résumé: drop the site chrome and the dark theme. */
+  @media print {
+    html,
+    body {
+      background: #fff !important;
+      color: #111 !important;
+    }
+
+    .site-header,
+    .site-footer,
+    .rails,
+    .skip-link,
+    .palette,
+    .toast {
+      display: none !important;
+    }
+  }
+</style>
