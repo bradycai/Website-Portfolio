@@ -1,5 +1,5 @@
 ---
-import { profile, primaryEmail } from "../data/profile";
+import { profile } from "../data/profile";
 import { url } from "../lib/url";
 
 interface Props {
@@ -61,7 +61,7 @@ const links = [
       </ul>
     </nav>
     <div class="menu-foot" style={`--i: ${links.length}`}>
-      <a href={`mailto:${primaryEmail}`}>{primaryEmail}</a>
+      {profile.emails.map((e) => <a href={`mailto:${e.address}`}>{e.address}</a>)}
       <span>
         <a href={profile.github} target="_blank" rel="noopener">GitHub</a>
         <a href={profile.linkedin} target="_blank" rel="noopener">LinkedIn</a>
