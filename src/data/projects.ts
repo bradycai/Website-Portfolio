@@ -34,9 +34,9 @@ const details: Record<string, ProjectDetails> = {
   OrderSync: {
     title: "OrderSync",
     description:
-      "Four marketplaces. One dashboard. AI-assisted order intake, inventory alerts, and customer replies with a person in control.",
+      "Four marketplaces. One dashboard. AI-assisted order intake, inventory alerts, and customer replies with a person in control, now on Postgres with roles and a sync engine.",
     category: "AI & data",
-    stack: ["React", "TypeScript", "Express", "Claude API"],
+    stack: ["React", "TypeScript", "PostgreSQL", "Claude API"],
     symbol: "layers",
     color: "mint",
     caseStudy: "ordersync",

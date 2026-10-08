@@ -1,34 +1,38 @@
 ---
 title: OrderSync
 summary: An operations dashboard for e-commerce sellers. It pulls orders from Shopify, TikTok Shop, Amazon, and eBay into one place, catches problems early, and drafts fixes for a person to approve.
-kind: Hackathon project
-period: Sep 2026
+kind: Hackathon project, rebuilt after
+period: Sep – Oct 2026
 year: "2026"
 order: 1
 award: 1st place, Misneach challenge at the AINU Hackathon ($700 team prize)
-stack: [TypeScript, React, Vite, Express, SQLite, Claude API]
+stack: [TypeScript, React, Vite, Express, PostgreSQL, Docker, Claude API]
 stats:
   - { value: "1st", label: "place, Misneach challenge" }
   - { value: "4", label: "marketplaces in one view" }
   - { value: "90%", label: "match confidence before a SKU counts" }
 story:
   - title: Import an order email
-    body: Paste a marketplace notification. Claude pulls out the order and suggests a SKU for each line, and nothing is saved until the seller reviews the preview.
+    body: Paste a marketplace notification. Claude pulls out the order and suggests a SKU for each line. Nothing is saved until the seller reviews the preview, and the identity key shows whether it will create an order or update one.
     image: ../../assets/projects/ordersync/intake.png
-    alt: Email intake preview listing the channel, order ID, identity key, customer, dates, and the SKUs matched from a pasted TikTok Shop notification.
+    alt: Import preview for a pasted TikTok Shop email, listing the channel, order ID, identity key tiktok:TT-88402, customer, dates, and the SKU resolved for each line.
   - title: Catch the problem
-    body: Every order lands in one table. Plain rules flag shortages, overdue shipments, and uncertain matches, and each alert shows its math and the orders behind it.
+    body: Plain rules flag shortages, overdue shipments, and uncertain matches in an action center. Each alert shows its math and the orders behind it, and routine follow-ups can be prepared in one click.
     image: ../../assets/projects/ordersync/attention.png
-    alt: Needs attention view with a critical alert that Heavyweight Hoodie Black / M is one unit short, showing 5 in stock minus 6 committed and the three orders involved.
+    alt: Action center with a critical alert that Heavyweight Hoodie Black / M is one unit short, showing 5 in stock minus 6 committed and the three orders involved.
   - title: Draft the fix, then approve it
-    body: The seller picks a resolution and Claude drafts the customer message. It's always editable, and nothing goes out without an explicit approval.
+    body: The seller picks a resolution and Claude drafts the customer message. It's always editable, and approving is labelled as simulated because nothing is actually sent.
     image: ../../assets/projects/ordersync/draft.png
-    alt: Review panel with an editable customer message drafted for the hoodie shortage, and buttons to approve or re-draft.
+    alt: Review drawer with an editable customer message for the hoodie shortage, a resolution picker, and buttons to approve as a simulated send or re-draft.
+  - title: Sync every channel
+    body: A sync engine pulls each channel on a schedule, with cursors, leases, retries, and run history. Running it twice imports nothing new, because every order is keyed by channel and marketplace ID.
+    image: ../../assets/projects/ordersync/sync.png
+    alt: Connections page with four enabled sample feeds, their cursors, and a run history where a repeat sync reports 0 new orders and 3 updated per channel.
 links:
   code: https://github.com/bradycai/OrderSync
 cover: ../../assets/projects/ordersync/overview.png
-coverAlt: OrderSync overview dashboard with order totals, a stock shortage callout for a black hoodie, and order counts by sales channel.
-tint: "#20392b"
+coverAlt: OrderSync dashboard showing 13 items needing attention, stat tiles for active orders, orders awaiting shipment, and low-stock products, and the unified order queue.
+tint: "#1a1830"
 ---
 
 import StockDemo from "../../components/StockDemo.astro";
@@ -39,17 +43,33 @@ A small brand selling on Shopify, TikTok Shop, Amazon, and eBay gets its orders 
 
 ## What it does
 
-OrderSync pulls every order into one table, keeps a running count of committed stock, and keeps a **Needs attention** queue for anything about to go wrong: stock shortages, overdue shipments, and products it can't match with confidence.
+OrderSync pulls every order into one queue, keeps a running count of committed stock, and keeps an **action center** for anything about to go wrong: stock shortages, overdue shipments, and products it can't match with confidence.
 
-Routine warnings, like an overdue shipment that only needs a follow-up, can be cleared by the AI assistant in one click. Critical issues, shortages, and uncertain matches always stay with the seller. For those, the seller picks a resolution (a delay, a partial shipment, a refund, or a stock correction) and Claude drafts the customer message.
+Routine warnings, like an overdue shipment that only needs a follow-up, can be prepared in one click. Critical issues, shortages, and uncertain matches always stay with the seller. For those, the seller picks a resolution (a delay, a partial shipment, a refund, or a stock correction) and Claude drafts the customer message.
 
 <StockDemo />
 
 ## How it's built
 
-- **AI for judgment, never arithmetic.** Claude reads pasted emails, suggests SKU matches, and drafts messages. Stock math, duplicate detection, deadlines, and alert thresholds are plain TypeScript.
-- **Imports are idempotent.** An order's identity is its channel plus its marketplace order ID, so a repeated notification updates the existing order instead of creating a second one.
-- **Uncertain matches stay out of the math.** A SKU suggestion under 90% confidence waits for the seller to confirm it, and the confirmed mapping is remembered for next time.
-- **Stock is never double-counted.** Starting stock is stored once, and commitments are recomputed from the order list on every request.
+- **AI for judgment, never arithmetic.** Claude reads pasted emails, suggests SKU matches, and drafts messages. Stock math, duplicate detection, deadlines, and alert thresholds are plain TypeScript in a shared package that the server and UI both use.
+- **Imports are idempotent.** An order's identity is its channel plus its marketplace order ID, enforced by a unique index. A repeated notification or a second sync updates the existing order instead of creating a copy.
+- **Uncertain matches stay out of the math.** A SKU suggestion under 90% confidence reserves no stock until the seller confirms it, and the confirmed mapping is remembered for next time.
+- **Stock is never double-counted.** Starting stock is physical stock, changed only by an approved correction. Commitments are recomputed from the order list on every request.
+- **An unstated field is not an assertion.** Most notification emails say nothing about fulfilment, so a re-import leaves the stored status alone. Otherwise a resent email could move a shipped order back to unshipped and re-commit stock that already left.
 
-The backend is an Express API over SQLite, seeded with sample data on first launch. Without an API key it runs in a demo mode with prepared AI outputs, which is how these screenshots were taken.
+## After the hackathon
+
+The hackathon build ran on SQLite. Afterwards I rebuilt it to be production-shaped:
+
+- **PostgreSQL with numbered migrations** and one repository module per table. Multi-step writes run in transactions.
+- **Constraints beat checks.** Rules that must survive two servers racing, such as order identity and one automated follow-up per alert, live in the schema as unique indexes rather than in application code.
+- **Stateless instances.** Sessions and sync leases live in the database, so any number of servers can run side by side. It ships as a Docker image.
+- **Accounts and roles.** scrypt-hashed passwords, owner, admin, and staff roles checked on the server, and an audit log of who changed what.
+- **A sync engine with a seam.** The engine owns scheduling, cursors, leases, retries, and dedupe. A marketplace only has to implement a small connector interface to fetch and translate orders.
+- **A dashboard built around real numbers.** Revenue, order value, on-time rate, and inventory value are computed in SQL, with per-channel charts and a dark interface.
+
+## What's real and what isn't
+
+The data layer, auth, roles, and sync pipeline are real. The marketplace connectors are sample feeds: connecting to Shopify or Amazon needs a registered developer app and per-seller tokens, so rather than fake that, the connector is the one piece left as a seam. Customer emails and stock updates are simulated and labelled that way in the UI.
+
+Without an API key, the app runs in a demo mode with prepared AI outputs, and that's how these screenshots were taken.
