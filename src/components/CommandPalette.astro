@@ -4,6 +4,7 @@
 import { getCollection } from "astro:content";
 import { profile } from "../data/profile";
 import { url } from "../lib/url";
+import { getGitHubSnapshot } from "../lib/github";
 
 type Item = {
   label: string;
@@ -27,6 +28,7 @@ const icons = {
 } as const;
 
 const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+const snapshot = await getGitHubSnapshot();
 
 const groups: { name: string; items: Item[] }[] = [
   {
@@ -34,6 +36,7 @@ const groups: { name: string; items: Item[] }[] = [
     items: [
       { label: "Home", href: url(""), icon: "page", keywords: "start top index" },
       { label: "Work", href: url("#work"), icon: "hash", keywords: "projects portfolio" },
+      { label: "All GitHub projects", href: url("#more"), icon: "hash", keywords: "explore search repositories library" },
       { label: "How I build", href: url("#approach"), icon: "hash", keywords: "approach principles" },
       { label: "Experience", href: url("#experience"), icon: "hash", keywords: "jobs co-op internship" },
       { label: "About", href: url("#about"), icon: "hash", keywords: "education skills school" },
@@ -49,6 +52,13 @@ const groups: { name: string; items: Item[] }[] = [
       href: url(`projects/${p.id}/`),
       icon: "case" as const,
       keywords: `${p.data.stack.join(" ")} ${p.data.summary}`,
+    })),
+  },
+  {
+    name: "GitHub projects",
+    items: snapshot.projects.filter((p) => !p.caseStudy).map((p) => ({
+      label: p.title, hint: p.category, href: p.url, external: true,
+      icon: "out" as const, keywords: `${p.name} ${p.stack.join(" ")} ${p.description}`,
     })),
   },
   {

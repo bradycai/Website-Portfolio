@@ -3,1047 +3,115 @@ import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
 import Base from "../layouts/Base.astro";
 import ProjectCover from "../components/ProjectCover.astro";
+import ProjectLibrary from "../components/ProjectLibrary.astro";
+import FeaturedPreview from "../components/FeaturedPreview.astro";
+import PortfolioMetrics from "../components/PortfolioMetrics.astro";
 import LogoWall from "../components/LogoWall.astro";
-import Stats from "../components/Stats.astro";
 import IsoDrawing from "../components/IsoDrawing.astro";
-import GitHubActivity from "../components/GitHubActivity.astro";
 import headshot from "../assets/headshot.jpg";
-import { profile, primaryEmail, experience, education, skills, moreProjects } from "../data/profile";
+import { profile, primaryEmail, experience, education, skills } from "../data/profile";
+import { getGitHubSnapshot } from "../lib/github";
 import { url } from "../lib/url";
+import "../styles/portfolio.css";
 
 const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
-
-// The same three ideas run through the case studies; each card points back to its proof.
+const snapshot = await getGitHubSnapshot();
+const notes: Record<string, { label: string; title: string; body: string; color: string }> = {
+  ordersync: { label: "01 / AI + OPERATIONS", title: "Less busywork. More business.", body: "An AI-assisted command center for sellers juggling orders across four marketplaces. Built at AINU, awarded first place in the Misneach challenge.", color: "mint" },
+  "trading-assistant": { label: "02 / AI + FINANCE", title: "Smart ideas. Hard guardrails.", body: "A full-stack research and trading system where AI makes recommendations and a deterministic risk engine checks every order.", color: "lavender" },
+  "frogs-videography": { label: "03 / DESIGN + DEVELOPMENT", title: "A better stage for their stories.", body: "A custom website for a New England video production company. Designed, developed, and launched from the first layout to the final domain.", color: "peach" },
+};
 const principles = [
-  {
-    fig: "0.1",
-    drawing: "layers" as const,
-    title: "AI for judgment, never arithmetic",
-    body: "In OrderSync, Claude reads order emails and drafts replies. Stock math, duplicate detection, and deadlines stay in plain TypeScript.",
-    href: url("projects/ordersync/"),
-    link: "OrderSync",
-  },
-  {
-    fig: "0.2",
-    drawing: "gates" as const,
-    title: "Guardrails before automation",
-    body: "The trading assistant checks every trade idea against nine deterministic rules, twice, before an order can reach the broker.",
-    href: url("projects/trading-assistant/"),
-    link: "AI Trading Assistant",
-  },
-  {
-    fig: "0.3",
-    drawing: "modules" as const,
-    title: "Built to hand off",
-    body: "The Frogs Videography site keeps its copy in one config file, and any of its 17 sections can be switched off with a single flag.",
-    href: url("projects/frogs-videography/"),
-    link: "Frogs Videography",
-  },
+  { drawing: "layers" as const, title: "Useful AI. Clear boundaries.", body: "AI handles the messy inputs. Plain code handles the math. People stay in control.", project: "OrderSync", slug: "ordersync" },
+  { drawing: "gates" as const, title: "Confidence comes from constraints.", body: "Good automation earns trust with checks, tests, and a trail you can follow.", project: "AI Trading Assistant", slug: "trading-assistant" },
+  { drawing: "modules" as const, title: "Built for the next person.", body: "Readable code and simple configuration make a product easier to keep improving.", project: "Frogs Videography", slug: "frogs-videography" },
 ];
-
-// Each letter of the name rises on its own, so split it up (the h1 keeps a plain label).
-let charIndex = 0;
-const nameWords = profile.name.split(" ").map((word) => [...word].map((ch) => ({ ch, i: charIndex++ })));
-
 const personJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: profile.name,
-  url: new URL(url(""), Astro.site).href,
-  image: new URL(url("og-image.png"), Astro.site).href,
-  email: profile.emails.map((e) => `mailto:${e.address}`),
-  jobTitle: "Software Engineer Co-op",
-  worksFor: { "@type": "Organization", name: "NExT Consulting" },
+  "@context": "https://schema.org", "@type": "Person", name: profile.name,
+  url: new URL(url(""), Astro.site).href, email: `mailto:${primaryEmail}`,
+  jobTitle: profile.title, sameAs: [profile.github, profile.linkedin],
   affiliation: { "@type": "CollegeOrUniversity", name: education.school },
-  address: { "@type": "PostalAddress", addressLocality: "Boston", addressRegion: "MA", addressCountry: "US" },
-  sameAs: [profile.github, profile.linkedin],
 };
 ---
 
 <Base isHome>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
-
-  <!-- ===================== Hero ===================== -->
-  <section class="hero" aria-labelledby="hero-name">
-    <div class="container">
-      <h1 class="hero-name" id="hero-name" data-hero-name aria-label={profile.name}>
-        {nameWords.map((word, w) => (
-          <>
-            {w > 0 && " "}
-            <span class="word" aria-hidden="true">
-              {word.map(({ ch, i }) => <span class="ch" style={`--i: ${i}`}>{ch}</span>)}
-            </span>
-          </>
-        ))}
-      </h1>
-
-      <div class="hero-row">
-        <div class="hero-lead">
-          <p class="hero-intro two-tone hero-in" style="--d: 0">
-            {profile.introLead} <span class="dim">{profile.introRest}</span>
-          </p>
-          <div class="hero-actions hero-in" style="--d: 2">
-            <a class="btn btn-primary" href="#contact">Get in touch</a>
-            <a class="btn btn-secondary" href="#work">See my work <span class="arrow" aria-hidden="true">↓</span></a>
-          </div>
-        </div>
-
-        <dl class="hero-facts">
-          <div class="hero-in" style="--d: 1">
-            <dt>Now</dt>
-            <dd>{profile.now}</dd>
-          </div>
-          <div class="hero-in" style="--d: 2">
-            <dt>Looking for</dt>
-            <dd class="with-dot"><span class="dot" aria-hidden="true"></span><span>{profile.lookingFor}</span></dd>
-          </div>
-          <div class="hero-in" style="--d: 3">
-            <dt>Based in</dt>
-            <dd>{profile.location} <span class="muted clock">· <time data-clock={profile.timeZone}></time></span></dd>
-          </div>
-          <div class="hero-in" style="--d: 4">
-            <dt>Elsewhere</dt>
-            <dd class="hero-links">
-              <a class="link" href={profile.github} target="_blank" rel="noopener">GitHub <span class="arrow arrow-out" aria-hidden="true">↗</span></a>
-              <a class="link" href={profile.linkedin} target="_blank" rel="noopener">LinkedIn <span class="arrow arrow-out" aria-hidden="true">↗</span></a>
-              <a class="link" href={`mailto:${primaryEmail}`}>Email</a>
-            </dd>
-          </div>
-        </dl>
-
-        <figure class="hero-portrait">
-          <Image src={headshot} alt={`Portrait of ${profile.name}`} widths={[180, 270, 360, 540]} sizes="(min-width: 1025px) 168px, (min-width: 641px) 22vw, 104px" priority />
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <LogoWall />
-
-  <!-- ===================== Work ===================== -->
-  <section class="section" id="work" aria-labelledby="work-title">
-    <div class="container section-grid">
-      <h2 class="section-label" id="work-title">Selected work</h2>
-      <div class="section-body">
-      <p class="lede two-tone work-lede" data-reveal>
-        Three projects, end to end. <span class="dim">A hackathon win, a trading system with hard guardrails, and a client site that’s live today.</span>
-      </p>
-      <ol class="projects">
-        {projects.map((project) => {
-          const href = url(`projects/${project.id}/`);
-          const { title, kind, year, award, summary, stack, links, stats } = project.data;
-          return (
-            <li class="project">
-              <a class="cover-link" href={href} tabindex="-1" aria-hidden="true" data-reveal="media">
-                <ProjectCover project={project} sizes="(min-width: 1240px) 876px, (min-width: 901px) 72vw, 100vw" />
-              </a>
-              <div class="project-info" data-reveal>
-                <div class="project-heading">
-                  <h3>
-                    <a class="project-title" href={href}><span transition:name={`title-${project.id}`}>{title}</span></a>
-                  </h3>
-                  <p class="muted">{kind}, {year}</p>
-                </div>
-                <div class="project-text">
-                  {award && <p class="award">{award}</p>}
-                  <p class="summary">{summary}</p>
-                  <div class="project-stats"><Stats stats={stats} /></div>
-                  <p class="stack muted">{stack.join(", ")}</p>
-                  <p class="project-links">
-                    <a class="link" href={href}>Read the case study <span class="arrow arrow-right" aria-hidden="true">→</span></a>
-                    {links.live && <a class="link" href={links.live} target="_blank" rel="noopener">Live site <span class="arrow arrow-out" aria-hidden="true">↗</span></a>}
-                    {links.code && <a class="link" href={links.code} target="_blank" rel="noopener">Code <span class="arrow arrow-out" aria-hidden="true">↗</span></a>}
-                  </p>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== How I build ===================== -->
-  <section class="section" id="approach" aria-labelledby="approach-title">
-    <div class="container section-grid">
-      <h2 class="section-label" id="approach-title">How I build</h2>
-      <div class="section-body">
-        <p class="lede two-tone" data-reveal>
-          The same three ideas show up in every project. <span class="dim">Each one links to the project it came from.</span>
-        </p>
-        <ul class="principles">
-          {principles.map((p, i) => (
-            <li class="principle spotlight" data-reveal style={`--i: ${i}`}>
-              <p class="fig">FIG {p.fig}</p>
-              <div class="principle-art"><IsoDrawing kind={p.drawing} /></div>
-              <h3>{p.title}</h3>
-              <p class="principle-body">{p.body}</p>
-              <a class="link principle-link" href={p.href}>{p.link} <span class="arrow arrow-right" aria-hidden="true">→</span></a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== Experience ===================== -->
-  <section class="section" id="experience" aria-labelledby="experience-title">
-    <div class="container section-grid">
-      <h2 class="section-label" id="experience-title">Experience</h2>
-      <ol class="section-body roles">
-        {experience.map((job) => (
-          <li class="role" data-reveal>
-            <p class="role-period tabular">
-              {job.current && <span class="dot" aria-hidden="true"></span>}
-              {job.period}
-            </p>
-            <div>
-              <h3 class="role-title">{job.role}</h3>
-              <p class="role-company">
-                {job.companyUrl ? (
-                  <a class="link-underlined" href={job.companyUrl} target="_blank" rel="noopener">{job.company}</a>
-                ) : (
-                  job.company
-                )}
-                <span class="muted"> · {job.location}</span>
-              </p>
-              <p class="role-summary">{job.summary}</p>
-              <ul class="role-points">
-                {job.highlights.map((point) => <li>{point}</li>)}
-              </ul>
-              <p class="stack muted">{job.stack.join(", ")}</p>
-              {job.caseStudy && (
-                <p class="role-more">
-                  <a class="link" href={url(`projects/${job.caseStudy}/`)}>See the case study <span class="arrow arrow-right" aria-hidden="true">→</span></a>
-                </p>
-              )}
+  <div class="portfolio-home">
+    <section class="portfolio-hero" aria-labelledby="hero-name">
+      <div class="hero-glow" aria-hidden="true" />
+      <div class="container">
+        <div class="hero-layout">
+          <div class="hero-copy">
+            <p class="eyebrow hero-enter"><span class="eyebrow-line" /> BRADY CAI · SOFTWARE ENGINEER</p>
+            <h1 id="hero-name" class="hero-enter" style="--delay: 80ms"><span class="hero-line">Curiosity in.</span><span class="hero-line">Good software</span><span class="hero-line hero-accent">out<span class="hero-asterisk" aria-hidden="true">✳</span><span class="hero-period">.</span></span></h1>
+            <p class="hero-description hero-enter" style="--delay: 160ms">I build thoughtful software for real-world problems.<br class="desktop-break" /> Full-stack products, useful AI, and the details<br class="desktop-break" /> that make them feel right.</p>
+            <div class="hero-buttons hero-enter" style="--delay: 240ms">
+              <a class="btn btn-primary" href="#work">Explore my work <span class="arrow arrow-right" aria-hidden="true">↗</span></a>
+              <a class="hero-github" href={profile.github} target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.1c-3.12.68-3.78-1.33-3.78-1.33-.5-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.68.08-.68 1.13.08 1.73 1.16 1.73 1.16 1 1.73 2.63 1.23 3.27.94.1-.73.39-1.23.71-1.51-2.5-.28-5.13-1.25-5.13-5.56 0-1.23.44-2.24 1.16-3.03-.12-.29-.5-1.43.11-2.98 0 0 .94-.3 3.08 1.15A10.7 10.7 0 0 1 12 6.12c.95 0 1.9.13 2.8.38 2.13-1.45 3.07-1.15 3.07-1.15.61 1.55.23 2.69.11 2.98.72.8 1.16 1.8 1.16 3.03 0 4.32-2.64 5.27-5.15 5.55.4.35.76 1.03.76 2.07v3.11c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z" /></svg>GitHub<span aria-hidden="true">↗</span></a>
             </div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  </section>
-
-  <!-- ===================== More projects ===================== -->
-  <section class="section" id="more" aria-labelledby="more-title">
-    <div class="container section-grid">
-      <h2 class="section-label" id="more-title">More projects</h2>
-      <div class="section-body">
-      <ul class="more">
-        {moreProjects.map((item, i) => (
-          <li data-reveal style={`--i: ${i}`}>
-            <a class="more-row" href={item.url} target="_blank" rel="noopener">
-              <span class="more-name">{item.name}</span>
-              <span class="more-desc">{item.description}</span>
-              <span class="more-stack muted">{item.stack}</span>
-              <span class="arrow arrow-out more-arrow" aria-hidden="true">↗</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-      <GitHubActivity />
+            <div class="hero-person hero-enter" style="--delay: 320ms">
+              <Image src={headshot} alt="Brady Cai" width={44} height={44} priority />
+              <div><span>CS + Business @ Northeastern</span><p><span class="dot" aria-hidden="true" /> Open to summer 2027 internships</p></div>
+            </div>
+          </div>
+          <FeaturedPreview projects={projects} />
+        </div>
+        <div class="hero-bottom"><p><span class="dot" aria-hidden="true" /> Currently building at <strong>NExT Consulting</strong></p><p>{profile.location} <span class="hero-divider">/</span> <time data-clock={profile.timeZone} /></p><a href="#work">Scroll to explore <span aria-hidden="true">↓</span></a></div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===================== About ===================== -->
-  <section class="section" id="about" aria-labelledby="about-title">
-    <div class="container section-grid">
-      <h2 class="section-label" id="about-title">About</h2>
-      <div class="section-body">
-        <p class="about-statement fill-block">
-          <span class="fill-text">
-            I study computer science and business at Northeastern’s Khoury College, graduating in 2028. Since September
-            2026 I’ve been a software engineer co-op at NExT Consulting, working on RepoPulse. Most of my projects land
-            where software meets day-to-day operations: orders, trades, and the websites small businesses run on.
-          </span>
-        </p>
+    <PortfolioMetrics />
+    <LogoWall />
 
-        <div class="about-grid">
-          <div class="about-block" data-reveal>
-            <h3>Education</h3>
-            <p class="strong">{education.school}</p>
-            <p>{education.degree}</p>
-            <p class="muted">{education.college} · {education.graduation}</p>
-            <p class="coursework-label muted">Coursework</p>
-            <p class="coursework">{education.coursework.join(", ")}</p>
-          </div>
-          <div class="about-block" data-reveal style="--i: 1">
-            <h3>Skills</h3>
-            <dl class="skills">
-              {skills.map((group) => (
-                <div>
-                  <dt class="muted">{group.group}</dt>
-                  <dd>{group.items.join(", ")}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+    <div class="project-marquee" aria-hidden="true"><div class="marquee-track">{[0, 1].map(() => <span>USEFUL AI <i>✳</i> THOUGHTFUL INTERFACES <i>✳</i> REAL-WORLD PRODUCTS <i>✳</i> ALWAYS BUILDING <i>✳</i> </span>)}</div></div>
+
+    <section class="portfolio-section featured-section" id="work" aria-labelledby="work-title">
+      <div class="container">
+        <div class="section-heading" data-reveal><div><p class="eyebrow"><span class="section-number">01</span> SELECTED WORK</p><h2 id="work-title">Less talk.<br /><span>More shipped.</span></h2></div><div class="heading-aside"><p>A few projects I’m proud of. <br />The problem, the process, and the product.</p><a class="text-link" href="#more">Explore all <span data-project-total>{snapshot.repoCount}</span> projects <span aria-hidden="true">↗</span></a></div></div>
+        <div class="featured-grid">
+          {projects.map((project, i) => {
+            const note = notes[project.id];
+            const href = url(`projects/${project.id}/`);
+            return <article class:list={["feature-card", `feature-${project.id}`, "spotlight", { "feature-wide": i === 0 }]} data-reveal>
+              <a class="feature-media cover-link" href={href} aria-label={`Explore ${project.data.title}`}>
+                <span class={`feature-badge ${note.color}`}>{i === 0 ? "✦ HACKATHON WINNER" : i === 1 ? "AI + DETERMINISTIC RISK" : "● LIVE CLIENT WEBSITE"}</span>
+                <ProjectCover project={project} sizes={i === 0 ? "(min-width: 1100px) 720px, 100vw" : "(min-width: 1100px) 600px, 100vw"} />
+              </a>
+              <div class="feature-content"><p class="feature-kicker">{note.label}</p><h3><a href={href}><span transition:name={`title-${project.id}`}>{project.data.title}</span><span class="feature-title-arrow" aria-hidden="true">↗</span></a></h3><p class="feature-tagline">{note.title}</p><p class="feature-description">{note.body}</p>
+                <ul class="tech-tags">{project.data.stack.slice(0, 4).map((tech) => <li>{tech}</li>)}</ul>
+                <div class="feature-stats">{project.data.stats.slice(0, 2).map((stat) => <div><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div>
+                <div class="feature-actions"><a class="text-link" href={href}>Inside the project <span class="arrow arrow-right" aria-hidden="true">→</span></a><div>{project.data.links.live && <a href={project.data.links.live} target="_blank" rel="noopener">Live site ↗</a>}{project.data.links.code && <a href={project.data.links.code} target="_blank" rel="noopener">GitHub ↗</a>}</div></div>
+              </div>
+            </article>;
+          })}
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===================== Contact ===================== -->
-  <section class="section" id="contact" aria-labelledby="contact-title">
-    <div class="container section-grid">
-      <h2 class="section-label" id="contact-title">Contact</h2>
-      <div class="section-body">
-        <p class="contact-lead" data-reveal>Hiring for summer 2027? I’d love to hear from you.</p>
-        <p class="contact-sub muted" data-reveal style="--i: 1">
-          I’m looking for a software engineering internship from May to August 2027. Email is the fastest way to reach me.
-        </p>
-        <ul class="contact-list" data-reveal style="--i: 2">
-          {profile.emails.map((email) => (
-            <li class="contact-row">
-              <span class="contact-label muted">{email.label}</span>
-              <a class="contact-value link" href={`mailto:${email.address}`}>{email.address}</a>
-              <button class="copy" type="button" data-copy={email.address} aria-label={`Copy ${email.address}`}>
-                <span data-copy-label>Copy</span>
-              </button>
-            </li>
-          ))}
-          <li class="contact-row">
-            <span class="contact-label muted">LinkedIn</span>
-            <a class="contact-value link" href={profile.linkedin} target="_blank" rel="noopener">linkedin.com/in/bradycai</a>
-            <span class="arrow contact-arrow" aria-hidden="true">↗</span>
-          </li>
-          <li class="contact-row">
-            <span class="contact-label muted">GitHub</span>
-            <a class="contact-value link" href={profile.github} target="_blank" rel="noopener">github.com/bradycai</a>
-            <span class="arrow contact-arrow" aria-hidden="true">↗</span>
-          </li>
-        </ul>
+    <section class="portfolio-section explorer-section" id="more" aria-labelledby="more-title">
+      <div class="container">
+        <div class="section-heading" data-reveal><div><p class="eyebrow"><span class="section-number">02</span> THE PROJECT LIBRARY</p><h2 id="more-title">Always building.<br /><span>Always curious.</span></h2></div><div class="heading-aside"><p>Apps, experiments, client work, and team projects. <br />Every public project, in one place.</p><a class="text-link" href={`${profile.github}?tab=repositories`} target="_blank" rel="noopener">github.com/bradycai <span aria-hidden="true">↗</span></a></div></div>
+        <ProjectLibrary />
       </div>
-    </div>
-  </section>
+    </section>
+
+    <section class="portfolio-section experience-section" id="experience" aria-labelledby="experience-title">
+      <div class="container experience-layout">
+        <div class="experience-intro" data-reveal><p class="eyebrow"><span class="section-number">03</span> IN GOOD COMPANY</p><h2 id="experience-title">Real teams.<br /><span>Real impact.</span></h2><p>I like working where I can own a problem, learn from good people, and ship something useful.</p><a class="text-link" href={url("resume/")}>View my résumé <span aria-hidden="true">↗</span></a></div>
+        <ol class="experience-list">{experience.map((job, i) => <li class="experience-item" data-reveal><div class="experience-marker" aria-hidden="true">{i === 0 ? "N" : "F"}<span /></div><div class="experience-detail"><div class="experience-top"><p>{job.period}</p>{job.current && <span class="current-label"><span class="dot" />CURRENT</span>}</div><h3>{job.role}</h3><p class="experience-company">{job.company} <span>· {job.location}</span></p><p class="experience-summary">{job.summary}</p><ul class="tech-tags">{job.stack.map((tech) => <li>{tech}</li>)}</ul>{job.caseStudy && <a class="text-link experience-case" href={url(`projects/${job.caseStudy}/`)}>Explore the work <span aria-hidden="true">↗</span></a>}</div></li>)}</ol>
+      </div>
+    </section>
+
+    <section class="portfolio-section about-section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="section-heading" data-reveal><div><p class="eyebrow"><span class="section-number">04</span> THE PERSON BEHIND THE CODE</p><h2 id="about-title">Hi, I’m Brady<span class="accent">.</span></h2></div><p class="about-side-note">Engineer by practice.<br />Curious by default.</p></div>
+        <div class="about-layout"><div class="about-photo" data-reveal><Image src={headshot} alt="Brady Cai, software engineer and Northeastern student" widths={[360, 600, 900]} sizes="(min-width: 900px) 360px, 90vw" /><div class="photo-caption"><span>BOSTON, MA</span><span aria-hidden="true">↗</span></div></div><div class="about-copy" data-reveal><p class="about-lead">I’m interested in the space between<br class="desktop-break" /> <span>“what if?”</span> and <span>“it works.”</span></p><p>I study computer science and business at Northeastern’s Khoury College, graduating in 2028. I’m currently a software engineer co-op at NExT Consulting, working on RepoPulse.</p><p>Most of my projects live where software meets everyday operations: the orders a small business manages, the decisions a trading system makes, or the website a client relies on. I enjoy making those experiences clearer, faster, and easier to use.</p><div class="education-note"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m2 9 10-5 10 5-10 5L2 9Zm4 2v6c4 3 8 3 12 0v-6M22 9v8" /></svg><div><strong>{education.school}</strong><p>{education.degree} <span>· Class of 2028</span></p></div></div></div></div>
+        <div class="skills-block" data-reveal><p class="eyebrow">MY EVERYDAY TOOLKIT</p><div class="skills-grid">{skills.slice(0, 4).map((group) => <div><h3>{group.group}</h3><p>{group.items.join(" · ")}</p></div>)}</div></div>
+      </div>
+    </section>
+
+    <section class="portfolio-section approach-section" id="approach" aria-labelledby="approach-title"><div class="container"><div class="approach-heading" data-reveal><p class="eyebrow">A LITTLE ABOUT THE PROCESS</p><h2 id="approach-title">Thoughtful from the inside out.</h2></div><div class="approach-grid">{principles.map((p, i) => <article class="approach-card" data-reveal><div class="approach-art"><IsoDrawing kind={p.drawing} /><span>0{i + 1}</span></div><h3>{p.title}</h3><p>{p.body}</p><a class="text-link" href={url(`projects/${p.slug}/`)}>{p.project} <span aria-hidden="true">↗</span></a></article>)}</div></div></section>
+
+    <section class="contact-section" id="contact" aria-labelledby="contact-title"><div class="container"><div class="contact-panel" data-reveal><div class="contact-orbit" aria-hidden="true" /><p class="eyebrow"><span class="dot" /> OPEN TO SUMMER 2027 OPPORTUNITIES</p><h2 id="contact-title">Good things start<br />with a <span>conversation.</span></h2><p class="contact-description">Have a project in mind, or a team I’d fit into?<br />I’d love to hear about it.</p><div class="contact-buttons"><a class="btn btn-primary" href={`mailto:${primaryEmail}`}>Let’s build something <span aria-hidden="true">↗</span></a><button type="button" class="copy-email" data-copy={primaryEmail} aria-label={`Copy ${primaryEmail}`}><span data-copy-label>Copy email</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 9h11v11H9zM5 15V4h11" /></svg></button></div><a class="contact-email" href={`mailto:${primaryEmail}`}>{primaryEmail}</a><div class="contact-socials"><a href={profile.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a><a href={profile.github} target="_blank" rel="noopener">GitHub ↗</a><a href={url("resume/")}>Résumé ↗</a></div></div></div></section>
+  </div>
 </Base>
-
-<style>
-  /* ---------- Hero ---------- */
-
-  .hero {
-    padding-top: calc(var(--header-h) + clamp(48px, 11vh, 132px));
-    padding-bottom: clamp(24px, 4vw, 48px);
-  }
-
-  .hero-name {
-    margin-left: -0.045em;
-    font-size: clamp(76px, 16.4vw, 236px);
-    font-weight: 520;
-    font-stretch: 84%;
-    line-height: 0.84;
-    letter-spacing: -0.05em;
-    white-space: nowrap;
-  }
-
-  /* Each word clips its letters, which rise into place one after another. */
-  .word {
-    display: inline-block;
-    overflow: clip;
-    margin: -0.06em -0.04em -0.16em;
-    padding: 0.06em 0.04em 0.16em;
-  }
-
-  .ch {
-    display: inline-block;
-    translate: 0 112%;
-    animation: char-rise 1.15s var(--ease-out) forwards;
-    animation-delay: calc(80ms + var(--i) * 42ms);
-  }
-
-  @keyframes char-rise {
-    to {
-      translate: 0 0;
-    }
-  }
-
-  .hero-row {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: 24px;
-    margin-top: clamp(40px, 6vw, 72px);
-    padding-top: 26px;
-  }
-
-  /* The rule above the intro draws itself in from the left. */
-  .hero-row::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    background: var(--line-strong);
-    transform-origin: left;
-    animation: rule-draw 1.4s var(--ease-out) 0.35s both;
-  }
-
-  @keyframes rule-draw {
-    from {
-      transform: scaleX(0);
-    }
-  }
-
-  .hero-in {
-    animation: hero-in 1s var(--ease-out) both;
-    animation-delay: calc(560ms + var(--d, 0) * 80ms);
-  }
-
-  @keyframes hero-in {
-    from {
-      opacity: 0;
-      translate: 0 12px;
-      filter: blur(6px);
-    }
-  }
-
-  .hero-lead {
-    grid-column: 1 / span 5;
-  }
-
-  .hero-intro {
-    max-width: 30ch;
-    font-size: clamp(20px, 1.7vw, 23px);
-    line-height: 1.42;
-    letter-spacing: -0.015em;
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 28px;
-  }
-
-  /* As the page scrolls away, the big name recedes (the header name takes over). */
-  @supports (animation-timeline: scroll()) {
-    .hero-name {
-      transform-origin: left bottom;
-      animation: name-recede linear both;
-    }
-
-    /* animation-timeline lives in its own, more specific rule: CSS minifiers fold it into
-     the animation shorthand, which browsers then reject as invalid. */
-    .hero .hero-name {
-      animation-timeline: scroll(root);
-      animation-range: 0 75vh;
-    }
-
-    @keyframes name-recede {
-      to {
-        opacity: 0.12;
-        transform: translateY(-5vh) scale(0.96);
-      }
-    }
-  }
-
-  .hero-facts {
-    grid-column: 7 / span 4;
-    display: grid;
-    align-content: start;
-    gap: 10px;
-    font-size: 15px;
-    line-height: 1.45;
-  }
-
-  .hero-facts > div {
-    display: grid;
-    grid-template-columns: 92px minmax(0, 1fr);
-    gap: 16px;
-  }
-
-  .hero-facts dt {
-    color: var(--muted);
-  }
-
-  .with-dot {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-  }
-
-  .with-dot .dot {
-    flex: none;
-    translate: 0 -1px;
-  }
-
-  .hero-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 16px;
-  }
-
-  .clock time:empty::before {
-    content: "ET";
-  }
-
-  .hero-portrait {
-    grid-column: 11 / span 2;
-    align-self: start;
-    justify-self: end;
-    width: 100%;
-    max-width: 168px;
-    overflow: hidden;
-    border-radius: 6px;
-    background: var(--surface);
-    animation: portrait-in 1.3s var(--ease-out) 0.45s both;
-  }
-
-  .hero-portrait :global(img) {
-    width: 100%;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    animation: portrait-zoom 1.6s var(--ease-out) 0.45s both;
-  }
-
-  @keyframes portrait-in {
-    from {
-      clip-path: inset(100% 0 0 0);
-    }
-    to {
-      clip-path: inset(0 0 0 0);
-    }
-  }
-
-  @keyframes portrait-zoom {
-    from {
-      scale: 1.14;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    .hero-lead {
-      grid-column: 1 / span 8;
-    }
-
-    .hero-facts {
-      grid-column: 1 / span 8;
-      margin-top: 32px;
-    }
-
-    .hero-portrait {
-      grid-column: 10 / span 3;
-      grid-row: 1 / span 2;
-      align-self: start;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .hero-row {
-      grid-template-columns: minmax(0, 1fr) 104px;
-      column-gap: 20px;
-    }
-
-    .hero-lead {
-      grid-column: 1 / -1;
-      grid-row: 2;
-      margin-top: 24px;
-    }
-
-    .hero-intro {
-      font-size: 19px;
-    }
-
-    .hero-portrait {
-      grid-column: 1;
-      grid-row: 1;
-      justify-self: start;
-      max-width: 96px;
-    }
-
-    .hero-facts {
-      grid-column: 1 / -1;
-      margin-top: 28px;
-    }
-
-    .hero-facts > div {
-      grid-template-columns: 88px minmax(0, 1fr);
-    }
-  }
-
-  /* ---------- Work ---------- */
-
-  .work-lede {
-    margin-bottom: clamp(40px, 6vw, 64px);
-  }
-
-  .project-stats {
-    margin-top: 20px;
-  }
-
-  .projects {
-    display: grid;
-    gap: clamp(64px, 9vw, 112px);
-  }
-
-  .cover-link {
-    display: block;
-    border-radius: 14px;
-  }
-
-  .project-info {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-    gap: 12px 24px;
-    margin-top: 24px;
-  }
-
-  .project-heading h3 {
-    font-size: clamp(24px, 2.2vw, 30px);
-    letter-spacing: -0.03em;
-  }
-
-  .project-title span {
-    display: inline-block;
-  }
-
-  .project-title:hover {
-    color: var(--accent);
-  }
-
-  .project-heading p {
-    margin-top: 4px;
-    font-size: 15px;
-  }
-
-  .award {
-    margin-bottom: 8px;
-    color: var(--accent);
-    font-size: 15px;
-    font-weight: 550;
-  }
-
-  .summary {
-    max-width: 56ch;
-    color: var(--fg-2);
-  }
-
-  .stack {
-    margin-top: 12px;
-    font-size: 14px;
-  }
-
-  .project-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 24px;
-    margin-top: 18px;
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  @media (max-width: 640px) {
-    .project-info {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ---------- Experience ---------- */
-
-  .roles {
-    display: grid;
-  }
-
-  .role {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 7fr);
-    gap: 8px 24px;
-    padding-block: 32px;
-    border-top: 1px solid var(--line);
-  }
-
-  .role:first-child {
-    padding-top: 0;
-    border-top: 0;
-  }
-
-  .role-period {
-    color: var(--muted);
-    font-size: 15px;
-  }
-
-  .role-period .dot {
-    margin-right: 8px;
-  }
-
-  .role-title {
-    font-size: 22px;
-    letter-spacing: -0.025em;
-  }
-
-  .role-company {
-    margin-top: 4px;
-    font-size: 16px;
-  }
-
-  .role-summary {
-    max-width: 62ch;
-    margin-top: 16px;
-    color: var(--fg-2);
-  }
-
-  .role-points {
-    display: grid;
-    gap: 8px;
-    max-width: 66ch;
-    margin-top: 14px;
-    color: var(--muted);
-    font-size: 16px;
-  }
-
-  .role-points li {
-    position: relative;
-    padding-left: 20px;
-  }
-
-  .role-points li::before {
-    content: "";
-    position: absolute;
-    left: 2px;
-    top: 0.8em;
-    width: 8px;
-    height: 1px;
-    background: var(--line-strong);
-  }
-
-  .role-more {
-    margin-top: 16px;
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  @media (max-width: 640px) {
-    .role {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ---------- More projects ---------- */
-
-  .more {
-    border-bottom: 1px solid var(--line);
-  }
-
-  .more-row {
-    position: relative;
-    z-index: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) minmax(0, 2.4fr) 20px;
-    gap: 6px 24px;
-    align-items: baseline;
-    padding-block: 18px;
-    border-top: 1px solid var(--line);
-  }
-
-  .more-row::before {
-    content: "";
-    position: absolute;
-    inset: 0 -12px;
-    z-index: -1;
-    border-radius: 10px;
-    background: var(--hover);
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-
-  .more-row:hover::before {
-    opacity: 1;
-  }
-
-  .more-name {
-    font-weight: 550;
-  }
-
-  .more-desc {
-    color: var(--fg-2);
-    font-size: 16px;
-  }
-
-  .more-stack {
-    font-size: 14px;
-  }
-
-  .more-arrow {
-    justify-self: end;
-    color: var(--muted);
-  }
-
-  .more-row:hover .more-arrow {
-    color: var(--fg);
-  }
-
-  .more-all {
-    grid-template-columns: minmax(0, 1fr) 20px;
-  }
-
-  @media (max-width: 760px) {
-    .more-row {
-      grid-template-columns: minmax(0, 1fr) 20px;
-    }
-
-    .more-desc,
-    .more-stack {
-      grid-column: 1;
-    }
-
-    .more-arrow {
-      grid-column: 2;
-      grid-row: 1;
-    }
-  }
-
-  /* ---------- About ---------- */
-
-  .about-statement {
-    max-width: 26em;
-    font-size: clamp(24px, 2.6vw, 36px);
-    font-weight: 500;
-    font-stretch: 94%;
-    line-height: 1.24;
-    letter-spacing: -0.028em;
-  }
-
-  /* ---------- How I build ---------- */
-
-  .principles {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    margin-top: clamp(36px, 5vw, 56px);
-  }
-
-  .principle {
-    display: flex;
-    flex-direction: column;
-    padding: 18px 20px 22px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--card);
-    transition: border-color 0.3s;
-  }
-
-  .principle:hover {
-    border-color: var(--line-strong);
-  }
-
-  .fig {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    letter-spacing: 0.06em;
-  }
-
-  .principle-art {
-    margin: 10px -6px 14px;
-  }
-
-  .principle h3 {
-    font-size: 18px;
-    letter-spacing: -0.02em;
-  }
-
-  .principle-body {
-    flex: 1;
-    margin-top: 8px;
-    color: var(--fg-2);
-    font-size: 15px;
-    line-height: 1.55;
-  }
-
-  .principle-link {
-    align-self: flex-start;
-    margin-top: 16px;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  @media (max-width: 1080px) {
-    .principles {
-      grid-template-columns: 1fr;
-    }
-
-    .principle {
-      display: grid;
-      grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
-      grid-template-rows: auto auto 1fr auto;
-      column-gap: 24px;
-    }
-
-    .principle .fig {
-      grid-column: 1 / -1;
-    }
-
-    .principle-art {
-      grid-row: 2 / span 3;
-      margin: 8px 0 0;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .principle {
-      display: flex;
-    }
-  }
-
-  .about-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 40px 24px;
-    margin-top: clamp(48px, 6vw, 72px);
-  }
-
-  .about-block h3 {
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-  }
-
-  .about-block p {
-    font-size: 16px;
-  }
-
-  .strong {
-    font-weight: 600;
-  }
-
-  .coursework-label {
-    margin-top: 16px;
-  }
-
-  .coursework {
-    margin-top: 2px;
-    color: var(--fg-2);
-    line-height: 1.55;
-  }
-
-  .skills {
-    display: grid;
-    gap: 12px;
-    font-size: 16px;
-  }
-
-  .skills > div {
-    display: grid;
-    grid-template-columns: 120px minmax(0, 1fr);
-    gap: 16px;
-  }
-
-  @media (max-width: 760px) {
-    .about-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .skills > div {
-      grid-template-columns: 1fr;
-      gap: 2px;
-    }
-  }
-
-  /* ---------- Contact ---------- */
-
-  .contact-lead {
-    max-width: 16ch;
-    font-size: clamp(36px, 4.6vw, 64px);
-    font-weight: 520;
-    font-stretch: 88%;
-    line-height: 1.02;
-    letter-spacing: -0.04em;
-    text-wrap: balance;
-  }
-
-  .contact-sub {
-    max-width: 48ch;
-    margin-top: 20px;
-  }
-
-  .contact-list {
-    margin-top: clamp(32px, 5vw, 48px);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .contact-row {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) 64px;
-    gap: 8px 24px;
-    align-items: baseline;
-    padding-block: 16px;
-    border-top: 1px solid var(--line);
-  }
-
-  .contact-label {
-    font-size: 15px;
-  }
-
-  .contact-value {
-    justify-self: start;
-    font-size: clamp(17px, 1.5vw, 20px);
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    overflow-wrap: anywhere;
-  }
-
-  .copy {
-    justify-self: end;
-    padding: 4px 12px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
-    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
-  }
-
-  .copy:hover {
-    border-color: var(--fg);
-    color: var(--fg);
-  }
-
-  .copy:global(.is-copied) {
-    border-color: transparent;
-    background: var(--fg);
-    color: var(--bg);
-  }
-
-  .contact-arrow {
-    justify-self: end;
-    padding-right: 4px;
-    color: var(--muted);
-  }
-
-  .contact-row:hover .contact-arrow {
-    color: var(--fg);
-    transform: translate(2px, -2px);
-  }
-
-  @media (max-width: 640px) {
-    .contact-row {
-      grid-template-columns: minmax(0, 1fr) 64px;
-    }
-
-    .contact-label {
-      grid-column: 1 / -1;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-name {
-      animation: none !important;
-    }
-
-    .ch,
-    .hero-in,
-    .hero-row::before,
-    .hero-portrait,
-    .hero-portrait :global(img) {
-      animation: none;
-      translate: none;
-    }
-  }
-</style>

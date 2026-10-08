@@ -1,0 +1,67 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ProjectCover from "./ProjectCover.astro";
+import { url } from "../lib/url";
+
+interface Props {
+  projects: CollectionEntry<"projects">[];
+}
+const { projects } = Astro.props;
+---
+
+<div class="hero-showcase hero-preview hero-enter" style="--delay: 180ms" data-showcase>
+  <div class="showcase-caption">
+    <span><span class="tiny-cross" aria-hidden="true">✳</span> A FEW THINGS I’VE BUILT</span>
+    <span data-showcase-count>01 / {String(projects.length).padStart(2, "0")}</span>
+  </div>
+  <div class="showcase-stage" aria-live="polite" aria-atomic="true">
+    {projects.map((project, i) => (
+      <div class="showcase-slide" data-showcase-slide hidden={i !== 0}>
+        <div class="browser-chrome">
+          <span class="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+          <span>{project.data.title.toLowerCase().replace(/ /g, "-")}</span>
+          <span aria-hidden="true">↗</span>
+        </div>
+        <a class="showcase-preview cover-link" href={url(`projects/${project.id}/`)} aria-label={`Explore ${project.data.title}`}>
+          <ProjectCover project={project} sizes="(min-width: 1100px) 580px, (min-width: 780px) 48vw, 90vw" priority={i === 0} transitionPrefix="hero-preview" />
+        </a>
+        <div class="showcase-foot">
+          <div><p class="slide-label">{project.data.kind}</p><h2>{project.data.title}</h2></div>
+          <a class="round-arrow" href={url(`projects/${project.id}/`)} aria-label={`Read ${project.data.title} case study`}>↗</a>
+        </div>
+      </div>
+    ))}
+  </div>
+  <div class="showcase-tabs" role="group" aria-label="Preview a featured project">
+    {projects.map((project, i) => (
+      <button type="button" data-showcase-select={i} aria-pressed={i === 0 ? "true" : "false"}>
+        <span class="tab-index">0{i + 1}</span>{project.data.title}<span class="tab-dot" aria-hidden="true" />
+      </button>
+    ))}
+  </div>
+</div>
+
+<style>
+  .hero-preview {
+    padding-top: 0;
+    min-width: 0;
+  }
+  .hero-preview .showcase-slide {
+    transform: none;
+    border-color: var(--line);
+    box-shadow: 0 20px 60px color-mix(in srgb, var(--fg) 8%, transparent);
+  }
+  .hero-preview .showcase-stage {
+    margin-bottom: 18px;
+  }
+  .hero-preview .slide-label {
+    color: var(--accent);
+  }
+  .hero-preview .showcase-tabs {
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+  }
+  .hero-preview .showcase-tabs button[aria-pressed="true"] {
+    color: var(--accent);
+  }
+</style>

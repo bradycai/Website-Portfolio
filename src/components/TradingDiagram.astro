@@ -2,6 +2,8 @@
 // Cover for the trading assistant: its architecture, drawn from the project README.
 // A real screenshot needs live Alpaca and Claude keys, so the system diagram stands in.
 // Narrow covers (phones) get a simpler three-step version with larger type.
+interface Props { idPrefix?: string; }
+const { idPrefix = "td" } = Astro.props;
 const signals = [
   { label: "BUY", width: 64, tone: "buy" },
   { label: "HOLD", width: 74, tone: "hold" },
@@ -30,23 +32,23 @@ const label =
 
 <svg class="diagram full" viewBox="0 0 1600 1000" role="img" aria-label={label}>
   <defs>
-    <pattern id="td-dots" width="40" height="40" patternUnits="userSpaceOnUse">
+    <pattern id={`${idPrefix}-dots`} width="40" height="40" patternUnits="userSpaceOnUse">
       <circle cx="2" cy="2" r="1.6" fill="rgba(255,255,255,0.07)"></circle>
     </pattern>
-    <marker id="td-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+    <marker id={`${idPrefix}-arrow`} viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
       <path d="M1 1.5 8.5 5 1 8.5" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
     </marker>
   </defs>
 
-  <rect width="1600" height="1000" fill="url(#td-dots)"></rect>
+  <rect width="1600" height="1000" fill={`url(#${idPrefix}-dots)`}></rect>
 
   <!-- Edges: a static line plus a dotted overlay that drifts along it. -->
   <g class="edges">
-    <path d="M364 505 H468" marker-end="url(#td-arrow)"></path>
-    <path d="M610 430 V285 H848" marker-end="url(#td-arrow)"></path>
-    <path d="M990 375 V422" marker-end="url(#td-arrow)" class="dashed"></path>
-    <path d="M1124 505 H1228" marker-end="url(#td-arrow)"></path>
-    <path d="M610 580 V730 H848" marker-end="url(#td-arrow)"></path>
+    <path d="M364 505 H468" marker-end={`url(#${idPrefix}-arrow)`}></path>
+    <path d="M610 430 V285 H848" marker-end={`url(#${idPrefix}-arrow)`}></path>
+    <path d="M990 375 V422" marker-end={`url(#${idPrefix}-arrow)`} class="dashed"></path>
+    <path d="M1124 505 H1228" marker-end={`url(#${idPrefix}-arrow)`}></path>
+    <path d="M610 580 V730 H848" marker-end={`url(#${idPrefix}-arrow)`}></path>
   </g>
   <g class="flow" aria-hidden="true">
     <path d="M364 505 H468"></path>
@@ -106,19 +108,19 @@ const label =
 
 <svg class="diagram compact" viewBox="0 0 800 500" role="img" aria-label={label}>
   <defs>
-    <pattern id="td-dots-c" width="28" height="28" patternUnits="userSpaceOnUse">
+    <pattern id={`${idPrefix}-dots-c`} width="28" height="28" patternUnits="userSpaceOnUse">
       <circle cx="2" cy="2" r="1.4" fill="rgba(255,255,255,0.07)"></circle>
     </pattern>
-    <marker id="td-arrow-c" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <marker id={`${idPrefix}-arrow-c`} viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M1 1.5 8.5 5 1 8.5" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
     </marker>
   </defs>
 
-  <rect width="800" height="500" fill="url(#td-dots-c)"></rect>
+  <rect width="800" height="500" fill={`url(#${idPrefix}-dots-c)`}></rect>
 
   <g class="edges">
-    <path d="M252 205 H289" marker-end="url(#td-arrow-c)"></path>
-    <path d="M507 205 H544" marker-end="url(#td-arrow-c)"></path>
+    <path d="M252 205 H289" marker-end={`url(#${idPrefix}-arrow-c)`}></path>
+    <path d="M507 205 H544" marker-end={`url(#${idPrefix}-arrow-c)`}></path>
   </g>
 
   <g class="node">

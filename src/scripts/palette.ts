@@ -128,6 +128,12 @@ document.addEventListener("keydown", (event) => {
     else openPalette();
   } else if (event.key === "/" && !typing && !event.metaKey && !event.ctrlKey && !event.altKey) {
     event.preventDefault();
+    const library = document.querySelector<HTMLElement>("[data-project-library]");
+    const rect = library?.getBoundingClientRect();
+    if (rect && rect.top < innerHeight && rect.bottom > 0 && !dialog()?.open) {
+      library?.querySelector<HTMLInputElement>("[data-project-search]")?.focus();
+      return;
+    }
     openPalette();
   }
 });

@@ -9,6 +9,7 @@ const columns = [
     title: "Site",
     links: [
       { label: "Work", href: url("#work") },
+      { label: "All projects", href: url("#more") },
       { label: "Experience", href: url("#experience") },
       { label: "About", href: url("#about") },
       { label: "Contact", href: url("#contact") },
@@ -63,6 +64,7 @@ const columns = [
       ))}
     </div>
 
+    <a class="footer-signature" href="#top" data-signature aria-label="Brady Cai — back to top">{[..."BRADY CAI"].map((letter, i) => <span style={`--letter: ${i}`} aria-hidden="true">{letter === " " ? "\u00a0" : letter}</span>)}<span class="signature-dot" aria-hidden="true">.</span></a>
     <div class="footer-bottom">
       <p>© {year} {profile.name}</p>
       <p class="muted">

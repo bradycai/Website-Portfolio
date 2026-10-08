@@ -1,6 +1,7 @@
 ---
 import "@fontsource-variable/instrument-sans/standard.css";
 import "../styles/global.css";
+import "../styles/motion.css";
 import { ClientRouter } from "astro:transitions";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -36,7 +37,7 @@ const ogImage = new URL(url(image), Astro.site);
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta name="theme-color" content="#f6f5f1" />
+    <meta name="theme-color" content="#f6f7f9" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={profile.name} />
@@ -64,7 +65,7 @@ const ogImage = new URL(url(image), Astro.site);
             theme = localStorage.getItem("theme");
           } catch {}
           if (theme !== "light" && theme !== "dark") {
-            theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            theme = "light";
           }
           root.dataset.theme = theme;
           root.classList.add("js");
@@ -86,7 +87,6 @@ const ogImage = new URL(url(image), Astro.site);
   </head>
   <body id="top">
     <a class="skip-link" href="#main">Skip to content</a>
-    <div class="rails" aria-hidden="true"></div>
     <Header isHome={isHome} />
     <main id="main">
       <slot />
@@ -95,6 +95,7 @@ const ogImage = new URL(url(image), Astro.site);
     <CommandPalette />
     <p class="sr-only" role="status" data-copy-status></p>
     <div class="toast" role="status" data-toast></div>
+    <div class="motion-cursor" data-motion-cursor aria-hidden="true"><span>VIEW ↗</span></div>
     <dialog class="lightbox" data-lightbox aria-label="Enlarged image">
       <img data-lightbox-img alt="" />
       <button class="lightbox-close" type="button" aria-label="Close">

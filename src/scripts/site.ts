@@ -7,6 +7,8 @@ import { setupPalette } from "./palette";
 import { setupDemos } from "./demos";
 import { showToast } from "./toast";
 import { setupLightbox } from "./lightbox";
+import { setupPortfolio } from "./portfolio";
+import { setupMotion, cleanupMotion } from "./motion";
 
 const root = document.documentElement;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -75,6 +77,11 @@ function syncHeader() {
   if (!header) return;
   const y = window.scrollY;
   header.classList.toggle("is-scrolled", y > 8);
+  if (header.dataset.home) {
+    header.classList.remove("is-hidden");
+    lastY = y;
+    return;
+  }
   if (header.classList.contains("menu-open")) return;
   if (y > lastY + 6 && y > 320) header.classList.add("is-hidden");
   else if (y < lastY - 6 || y <= 320) header.classList.remove("is-hidden");
@@ -102,7 +109,7 @@ function setupWordmark() {
 
 function applyTheme(theme: "light" | "dark") {
   root.dataset.theme = theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0f0f0e" : "#f6f5f1");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0b1119" : "#f6f7f9");
   document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
     btn.setAttribute("aria-label", `Switch to ${theme === "dark" ? "light" : "dark"} theme`);
   });
@@ -375,6 +382,8 @@ function init() {
   setupToc();
   setupHeadingAnchors();
   setupLightbox();
+  setupPortfolio();
+  setupMotion();
   lastY = window.scrollY;
   syncHeader();
 }
@@ -390,6 +399,7 @@ document.addEventListener("astro:after-swap", () => {
   requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("reveal-instant")));
 });
 document.addEventListener("astro:before-swap", () => {
+  cleanupMotion();
   setMenu(false);
   revealer?.disconnect();
   nameWatcher?.disconnect();

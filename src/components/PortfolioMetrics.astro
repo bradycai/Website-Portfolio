@@ -1,0 +1,19 @@
+---
+import { getGitHubSnapshot } from "../lib/github";
+const snapshot = await getGitHubSnapshot();
+const metrics = [
+  { value: snapshot.repoCount, label: "Public projects", note: "Always something in progress", suffix: "" },
+  { value: 3, label: "Deep-dive case studies", note: "The decisions behind the code", suffix: "" },
+  { value: 4, label: "Marketplaces, one dashboard", note: "Connected through OrderSync", suffix: "" },
+  { value: 1, label: "Misneach challenge finish", note: "AINU hackathon · OrderSync", suffix: "st" },
+];
+---
+
+<div class="portfolio-metrics container" aria-label="Portfolio at a glance">
+  {metrics.map((metric) => (
+    <div class="portfolio-metric" data-reveal>
+      <p class="metric-value" aria-label={`${metric.value}${metric.suffix}`}><span data-count-to={metric.value} aria-hidden="true">{metric.value}</span><span class="metric-suffix" aria-hidden="true">{metric.suffix || "."}</span></p>
+      <p class="metric-label">{metric.label}</p><p class="metric-note">{metric.note}</p>
+    </div>
+  ))}
+</div>

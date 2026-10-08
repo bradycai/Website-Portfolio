@@ -5,21 +5,30 @@
    ========================================================================== */
 
 :root {
-  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans:
+    "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
-  --bg: #f6f5f1;
-  --fg: #171716;
-  --fg-2: #3f3e3a;
-  --muted: #6b6a64;
-  --line: #e2e0d9;
-  --line-strong: #cbc8bf;
-  --surface: #edebe4;
-  --accent: #d6461f;
-  --hover: rgba(23, 23, 22, 0.045);
-  --header-bg: rgba(246, 245, 241, 0.82);
-  --card: #fbfaf7;
-  --spot: rgba(214, 70, 31, 0.08);
+  --bg: #f6f7f9;
+  --fg: #171e45;
+  --fg-2: #424a61;
+  --muted: #697186;
+  --line: #e0e4ec;
+  --line-strong: #c4ccda;
+  --surface: #ecf0f5;
+  --accent: #27745e;
+  --accent-soft: #def0e6;
+  --accent-ink: #fff;
+  --coral: #c9593c;
+  --lavender: #7964ad;
+  --peach: #ad633c;
+  --blue: #3973b5;
+  --hover: rgba(23, 30, 69, 0.045);
+  --header-bg: rgba(246, 247, 249, 0.92);
+  --card: #fff;
+  --spot: rgba(22, 115, 84, 0.07);
   --fill-base: color-mix(in srgb, var(--fg) 22%, var(--bg));
 
   /* Chart series: validated categorical slots (dataviz reference palette), plus a neutral "Other". */
@@ -34,24 +43,30 @@
 
   --container: 1200px;
   --gutter: clamp(20px, 4vw, 40px);
-  --header-h: 68px;
+  --header-h: 84px;
 
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #0f0f0e;
-  --fg: #edece7;
-  --fg-2: #c8c6bf;
-  --muted: #9b9991;
-  --line: #272725;
-  --line-strong: #3a3935;
-  --surface: #191917;
-  --accent: #ff6b3d;
-  --hover: rgba(237, 236, 231, 0.06);
-  --header-bg: rgba(15, 15, 14, 0.78);
-  --card: #141413;
-  --spot: rgba(255, 107, 61, 0.1);
+  --bg: #0b1119;
+  --fg: #edf2f0;
+  --fg-2: #b8c4c3;
+  --muted: #91a1a8;
+  --line: #243039;
+  --line-strong: #3b4a52;
+  --surface: #151f29;
+  --accent: #92e6c4;
+  --accent-soft: #18352d;
+  --accent-ink: #10291f;
+  --coral: #efa27a;
+  --lavender: #b8a4ed;
+  --peach: #efb18b;
+  --blue: #94bbef;
+  --hover: rgba(237, 242, 240, 0.05);
+  --header-bg: rgba(11, 17, 25, 0.86);
+  --card: #101922;
+  --spot: rgba(146, 230, 196, 0.075);
 
   --series-1: #3987e5;
   --series-2: #d95926;
@@ -95,23 +110,40 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote {
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+blockquote {
   margin: 0;
 }
 
-ul, ol {
+ul,
+ol {
   padding: 0;
   list-style: none;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-weight: 550;
   line-height: 1.12;
   letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
-p, li, dd, figcaption {
+p,
+li,
+dd,
+figcaption {
   text-wrap: pretty;
 }
 
@@ -120,7 +152,8 @@ a {
   text-decoration: none;
 }
 
-img, svg {
+img,
+svg {
   display: block;
   max-width: 100%;
 }
@@ -141,7 +174,7 @@ button {
 
 ::selection {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-ink);
 }
 
 :focus-visible {
@@ -252,8 +285,11 @@ button {
 
 /* Underline that draws in from the left on hover. */
 .link {
-  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
-  transition: background-size 0.45s var(--ease-out), color 0.2s;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0
+    1px;
+  transition:
+    background-size 0.45s var(--ease-out),
+    color 0.2s;
 }
 
 .link:hover {
@@ -262,8 +298,11 @@ button {
 
 /* Persistent underline, for links inside running text. */
 .link-underlined {
-  background: linear-gradient(var(--line-strong), var(--line-strong)) no-repeat 0 100% / 100% 1px;
-  transition: background-image 0.2s, color 0.2s;
+  background: linear-gradient(var(--line-strong), var(--line-strong)) no-repeat
+    0 100% / 100% 1px;
+  transition:
+    background-image 0.2s,
+    color 0.2s;
 }
 
 .link-underlined:hover {
@@ -357,13 +396,14 @@ a:hover .arrow-out {
 }
 
 .btn-primary {
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .btn-primary:hover {
-  background: var(--accent);
-  color: #fff;
+  background: color-mix(in srgb, var(--accent) 84%, var(--fg));
+  color: var(--accent-ink);
+  transform: translateY(-2px);
 }
 
 .btn-secondary {
@@ -411,7 +451,11 @@ a:hover .arrow-out {
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 0%), var(--spot), transparent 65%);
+  background: radial-gradient(
+    360px circle at var(--mx, 50%) var(--my, 0%),
+    var(--spot),
+    transparent 65%
+  );
   opacity: 0;
   transition: opacity 0.4s;
   pointer-events: none;
@@ -432,7 +476,9 @@ a:hover .arrow-out {
     background-image:
       linear-gradient(var(--fg), var(--fg)),
       linear-gradient(var(--fill-base), var(--fill-base));
-    background-size: 0% 100%, 100% 100%;
+    background-size:
+      0% 100%,
+      100% 100%;
     background-repeat: no-repeat;
     -webkit-background-clip: text;
     background-clip: text;
@@ -448,7 +494,9 @@ a:hover .arrow-out {
 
   @keyframes fill-text {
     to {
-      background-size: 100% 100%, 100% 100%;
+      background-size:
+        100% 100%,
+        100% 100%;
     }
   }
 }
@@ -469,7 +517,9 @@ a:hover .arrow-out {
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 12px);
-  transition: opacity 0.25s var(--ease-out), transform 0.35s var(--ease-out);
+  transition:
+    opacity 0.25s var(--ease-out),
+    transform 0.35s var(--ease-out);
 }
 
 .toast.is-visible {
@@ -561,13 +611,17 @@ a:hover .arrow-out {
 .pg-range::-webkit-slider-runnable-track {
   height: 3px;
   border-radius: 3px;
-  background: linear-gradient(var(--fg), var(--fg)) 0 0 / var(--pct, 50%) 100% no-repeat, var(--line-strong);
+  background:
+    linear-gradient(var(--fg), var(--fg)) 0 0 / var(--pct, 50%) 100% no-repeat,
+    var(--line-strong);
 }
 
 .pg-range::-moz-range-track {
   height: 3px;
   border-radius: 3px;
-  background: linear-gradient(var(--fg), var(--fg)) 0 0 / var(--pct, 50%) 100% no-repeat, var(--line-strong);
+  background:
+    linear-gradient(var(--fg), var(--fg)) 0 0 / var(--pct, 50%) 100% no-repeat,
+    var(--line-strong);
 }
 
 .pg-range::-webkit-slider-thumb {
@@ -652,7 +706,9 @@ a:hover .arrow-out {
   font-weight: 500;
   text-align: center;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .pg-segmented input {
@@ -719,7 +775,9 @@ a:hover .arrow-out {
   font-size: 13.5px;
   font-weight: 500;
   text-align: left;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
 .pg-button:hover {
@@ -741,7 +799,9 @@ a:hover .arrow-out {
   color: #fff;
   opacity: 0;
   transform: scale(0.9);
-  transition: opacity 0.2s, transform 0.25s var(--ease-out);
+  transition:
+    opacity 0.2s,
+    transform 0.25s var(--ease-out);
 }
 
 .zoomable:hover .zoom-hint,
@@ -864,7 +924,9 @@ a:hover .arrow-out {
   color: var(--muted);
   font-weight: 400;
   opacity: 0;
-  transition: opacity 0.2s, color 0.2s;
+  transition:
+    opacity 0.2s,
+    color 0.2s;
 }
 
 .prose h2:hover .anchor,
@@ -883,7 +945,8 @@ a:hover .arrow-out {
 
 .prose a {
   color: var(--fg);
-  background: linear-gradient(var(--line-strong), var(--line-strong)) no-repeat 0 100% / 100% 1px;
+  background: linear-gradient(var(--line-strong), var(--line-strong)) no-repeat
+    0 100% / 100% 1px;
 }
 
 .prose a:hover {

@@ -5,25 +5,25 @@ import { url } from "../lib/url";
 interface Props {
   isHome?: boolean;
 }
-
 const { isHome = false } = Astro.props;
 
 const links = [
-  { href: url("#work"), label: "Work" },
+  { href: url("#work"), label: "Projects" },
+  { href: url("#more"), label: "Explore" },
   { href: url("#experience"), label: "Experience" },
   { href: url("#about"), label: "About" },
-  { href: url("#contact"), label: "Contact" },
   { href: url("resume/"), label: "Résumé" },
 ];
 ---
 
-<header class:list={["site-header", { "mark-auto": isHome }]} data-header>
+<header class="site-header" data-header data-home={isHome ? "true" : undefined}>
   <div class="container bar">
-    <a class="wordmark" href={url("")}>{profile.name}</a>
+    <a class="wordmark" href={url("")} aria-label={`${profile.name} — home`}><span class="monogram">bc<span>.</span></span><span class="wordmark-name">{profile.name}</span></a>
+    {isHome && <span class="header-section"><span aria-hidden="true" /><span data-current-section>00 / INTRO</span></span>}
 
     <nav class="nav" aria-label="Primary">
       <ul class="nav-links">
-        {links.map((link) => <li><a class="link" href={link.href}>{link.label}</a></li>)}
+        {links.map((link) => <li><a class="link rolling-link" href={link.href}><span class="rolling-text"><span>{link.label}</span><span aria-hidden="true">{link.label}</span></span></a></li>)}
       </ul>
     </nav>
 
@@ -44,12 +44,13 @@ const links = [
           <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"></path>
         </svg>
       </button>
-      <a class="btn btn-primary btn-sm cta" href={url("#contact")}>Get in touch</a>
+      <a class="btn btn-secondary btn-sm cta" href={url("#contact")}>Let’s talk <span aria-hidden="true">↗</span></a>
       <button class="menu-btn" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-menu">
         <span data-menu-label>Menu</span>
       </button>
     </div>
   </div>
+  <span class="header-progress" data-scroll-progress aria-hidden="true" />
 
   <div class="menu" id="site-menu" data-menu>
     <nav aria-label="Mobile">
@@ -88,7 +89,7 @@ const links = [
     background: var(--header-bg);
     -webkit-backdrop-filter: saturate(160%) blur(16px);
     backdrop-filter: saturate(160%) blur(16px);
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.35s;
   }
 
@@ -110,11 +111,19 @@ const links = [
   }
 
   .wordmark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-size: 16px;
     font-weight: 600;
     letter-spacing: -0.02em;
     transition: opacity 0.45s var(--ease-out), translate 0.45s var(--ease-out);
   }
+
+  .monogram { display: grid; grid-auto-flow: column; align-items: center; width: 40px; height: 40px; padding: 0 9px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); font-size: 22px; font-weight: 650; letter-spacing: -0.07em; }
+  .monogram span { color: var(--accent); }
+  .nav-links a { font-size: 13px; }
+  @media (max-width: 1180px) { .wordmark-name { display: none; } }
 
   /* Home page: the hero name is the logo until it scrolls out of view. */
   .mark-auto:not(:global(.show-mark)):not(:global(.menu-open)) .wordmark {

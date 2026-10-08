@@ -1,0 +1,90 @@
+[
+  {
+    "name": "OrderSync",
+    "description": "AI-powered operations dashboard for multi-marketplace sellers.",
+    "html_url": "https://github.com/bradycai/OrderSync",
+    "homepage": null,
+    "language": "TypeScript",
+    "fork": false,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2026-10-07T03:44:05Z"
+  },
+  {
+    "name": "Website-Portfolio",
+    "description": "Brady Cai's personal portfolio, built with Astro.",
+    "html_url": "https://github.com/bradycai/Website-Portfolio",
+    "homepage": "https://bradycai.github.io/Website-Portfolio/",
+    "language": "Astro",
+    "fork": false,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2026-10-03T01:12:39Z"
+  },
+  {
+    "name": "FrogsVideography",
+    "description": "Full-stack informational and scheduling website for Frogs Videography.",
+    "html_url": "https://github.com/bradycai/FrogsVideography",
+    "homepage": null,
+    "language": "CSS",
+    "fork": false,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2026-09-21T02:34:33Z"
+  },
+  {
+    "name": "RepoPulse",
+    "description": "A dashboard for reviewing student repositories and contributions in group projects.",
+    "html_url": "https://github.com/bradycai/RepoPulse",
+    "homepage": null,
+    "language": null,
+    "fork": true,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2026-09-17T18:44:55Z"
+  },
+  {
+    "name": "Stock-Application",
+    "description": "AI-powered stock research with a deterministic risk engine.",
+    "html_url": "https://github.com/bradycai/Stock-Application",
+    "homepage": null,
+    "language": "Python",
+    "fork": false,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2026-07-09T04:43:02Z"
+  },
+  {
+    "name": "CoinTrack",
+    "description": "A budgeting and spending tracker for college students.",
+    "html_url": "https://github.com/bradycai/CoinTrack",
+    "homepage": null,
+    "language": "Swift",
+    "fork": false,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2026-03-18T03:33:34Z"
+  },
+  {
+    "name": "AppProject",
+    "description": "An HTML-based project from my public GitHub archive.",
+    "html_url": "https://github.com/bradycai/AppProject",
+    "homepage": null,
+    "language": "HTML",
+    "fork": false,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2025-11-27T01:10:58Z"
+  },
+  {
+    "name": "ChronoCal",
+    "description": "A Java calendar with recurring event series and multiple calendars.",
+    "html_url": "https://github.com/bradycai/ChronoCal",
+    "homepage": null,
+    "language": "Java",
+    "fork": false,
+    "archived": false,
+    "stargazers_count": 0,
+    "pushed_at": "2025-09-13T16:35:06Z"
+  }
+]

@@ -1,0 +1,55 @@
+---
+import { getGitHubSnapshot } from "../lib/github";
+import { projectCategories, projectSymbols } from "../data/projects";
+import { url } from "../lib/url";
+import { profile } from "../data/profile";
+const snapshot = await getGitHubSnapshot();
+---
+
+<div class="project-library" data-project-library data-base={url("")}>
+  <div class="library-toolbar">
+    <div class="project-filters" role="group" aria-label="Filter projects by category">
+      {projectCategories.map((category, i) => <button type="button" class="filter-btn" data-project-filter={category} aria-pressed={i === 0 ? "true" : "false"}>{category}{i === 0 && <span data-library-count>{snapshot.repoCount}</span>}</button>)}
+    </div>
+    <label class="project-search">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></svg>
+      <span class="sr-only">Search projects by name, technology, or description</span>
+      <input type="search" data-project-search placeholder="Search projects..." autocomplete="off" />
+      <kbd>/</kbd>
+    </label>
+  </div>
+  <div class="library-meta">
+    <p data-project-results role="status" aria-live="polite">Showing all {snapshot.repoCount} projects</p>
+    <label>Sort by <select data-project-sort aria-label="Sort projects"><option value="recent">Recently updated</option><option value="name">Name: A–Z</option></select></label>
+  </div>
+  <div class="repository-grid" data-repository-grid>
+    {snapshot.projects.map((project) => (
+      <article class="repository-card spotlight" data-project-card data-name={project.name} data-title={project.title} data-category={project.category} data-search={`${project.title} ${project.name} ${project.description} ${project.stack.join(" ")}`.toLowerCase()} data-updated={project.pushedAt}>
+        <div class="repository-top">
+          <span class={`project-symbol ${project.color}`}><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d={projectSymbols[project.symbol]} /></svg></span>
+          <span class="repository-type">{project.category}{project.fork && " · Fork"}{project.archived && " · Archived"}</span>
+          <a class="repository-arrow" href={project.url} target="_blank" rel="noopener" aria-label={`View ${project.title} on GitHub`}>↗</a>
+        </div>
+        <h3><a href={project.caseStudy ? url(`projects/${project.caseStudy}/`) : project.url} target={project.caseStudy ? undefined : "_blank"} rel={project.caseStudy ? undefined : "noopener"}>{project.title}</a></h3>
+        <p class="repository-description">{project.description}</p>
+        <ul class="tech-tags" aria-label="Technologies">{project.stack.map((tech) => <li>{tech}</li>)}</ul>
+        <div class="repository-bottom">
+          <p><span class={`language-dot ${project.color}`} aria-hidden="true" />{project.language ?? "Team project"}</p>
+          <div class="repository-links">
+            {project.caseStudy && <a href={url(`projects/${project.caseStudy}/`)}>Case study <span aria-hidden="true">↗</span></a>}
+            {project.live && <a href={project.live} target="_blank" rel="noopener">Live site <span aria-hidden="true">↗</span></a>}
+            <a href={project.url} target="_blank" rel="noopener">Code <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+  <div class="library-empty" data-project-empty hidden>
+    <p>No projects found.</p><span>Try another name or technology, or reset your filters.</span>
+    <button type="button" class="btn btn-secondary" data-project-reset>Show all projects</button>
+  </div>
+  <div class="library-sync">
+    <p><span class="sync-dot" aria-hidden="true" /><span data-github-status>{snapshot.source === "github" ? "Synced with GitHub" : "Saved GitHub snapshot"}</span><span class="sync-date"> · <time datetime={snapshot.fetchedAt}>{new Date(snapshot.fetchedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}</time></span></p>
+    <div><button type="button" data-github-refresh>Refresh <span aria-hidden="true">↻</span></button><a href={`${profile.github}?tab=repositories`} target="_blank" rel="noopener">View on GitHub <span aria-hidden="true">↗</span></a></div>
+  </div>
+</div>
